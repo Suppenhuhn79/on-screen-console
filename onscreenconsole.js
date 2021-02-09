@@ -128,7 +128,7 @@ if (/\bconsole=\d\b/i.test(window.location.search) === true)
 									let keySpan = document.createElement("span");
 									keySpan.innerHTML = m + ":&nbsp;";
 									li.appendChild(keySpan);
-									li.appendChild(__formatSimpleType(value[m]), kind);
+									li.appendChild(__formatSimpleType(value[m], kind));
 									ul.appendChild(li);
 								};
 								span.appendChild(ul);
