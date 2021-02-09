@@ -27,7 +27,7 @@ if (/\bconsole=\d\b/i.test(window.location.search) === true)
 			"internal": "color: #fff; font-style: italic;",
 			"number": "color: #4d8;",
 			"object": "color: #3ff;",
-			"function": "background-color: #008; color: #acf;",
+			"function": "color: #acf;",
 			"ITEM": "display: inline-block; vertical-align: top; margin-right: 0.7em;"
 		};
 		_osc._setElementStyle = (element, style) =>
@@ -82,7 +82,11 @@ if (/\bconsole=\d\b/i.test(window.location.search) === true)
 						break;
 					case "function":
 						_osc._setElementStyle(span, _osc.styles["function"]);
-						let funcBody = value.toString();
+						let funcBody = value.toString().trim();
+						if (funcBody.startsWith("function") === false)
+						{
+							funcBody = "function" + funcBody;
+						};
 						span.innerHTML = funcBody.substr(0, funcBody.indexOf(")") + 1).replaceAll("\n", "").replaceAll("\r", "");
 						break;
 					default:
