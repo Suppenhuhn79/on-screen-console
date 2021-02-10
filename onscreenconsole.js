@@ -332,6 +332,9 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 					case "fs":
 						_osc.body.style.fontSize = intCmd[2];
 						break;
+					case "zi":
+						_osc.body.style.zIndex = intCmd[2];
+						break;
 					default:
 						_osc._log("error", ["Unrecognized internal command " + intCmd[1]]);
 					};
