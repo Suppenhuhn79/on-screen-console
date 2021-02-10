@@ -16,7 +16,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 		styles:
 		{
 			"#": "background-color:#006;color:#bbb;font-family:monospace;font-size:small;position:fixed;top:0px;left:0px;width:100%;margin:0rem;padding:0.5rem;z-index:" + Number.MAX_SAFE_INTEGER + ";",
-			"prompt": "background-color:inherit;color:inherit;font-family:inherit;width:100%;border:1px solid #666;outline:none;",
+			"prompt": "background-color:inherit;color:inherit;font-family:inherit;font-size:inherit;width:100%;border:1px solid #666;outline:none;",
 			"output": "white-space:pre;padding:0rem;margin:0rem;max-height:60vh;overflow:scroll;",
 			"warn": "color:#dd6;",
 			"error": "color:#f66;",
