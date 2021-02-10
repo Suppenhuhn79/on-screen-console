@@ -17,9 +17,11 @@ https://suppenhuhn79.github.io/on-screen-console/demo-page.html?console=1
 
 `:x` exits the on-screen-console
 
-`:mh value` sets the maximum height of the output. _value_ is any valid CSS size specification.
+`:mh value` sets the maximum height of the output. _value_ is any valid CSS size specification. This should always be less than 100vh or 100% (consider padding and input prompt size).
 
 `:fs value` sets the font size. _value_ is any valid CSS size specification.
+
+`zi: number` sets the z-index of the on-screen-console. Initially console is the very top most element. Be careful to not set the z-index too low.
 
 Shorthand makes it more handy for mobile devices. And yes, type colon and no space.
 
