@@ -1,5 +1,5 @@
 # on-screen-console
-This is an onscreen/inpage console/debugger. It's vanilla-javascript in **one file** with **all features** and absolutely **zero dependencies**!
+This is an onscreen/inpage console/debugger. It's vanilla-javascript with **all features** in **one file** and absolutely **zero dependencies**!
 
 It hooks into the default `console` functions, so everything written to console, will also be written to on-screen-console.
 
@@ -9,36 +9,46 @@ Just add `<script src="onscreenconsole.js"></script>` to your HTML file and then
 
 Take a look at the live demo:
 
-https://suppenhuhn79.github.io/on-screen-console/?console=1
+https://suppenhuhn79.github.io/on-screen-console/demo-page.html?console=1
 
 ## Inernal commands
-`:clear` clears the on-screen-console output
 
-`:exit` exits the on-screen-console
+`:clr` clears the on-screen-console output
 
-(Yes, type colon and no space)
+`:x` exits the on-screen-console
+
+`:mh value` sets the maximum height of the output. _value_ is any valid CSS size specification.
+
+`:fs value` sets the font size. _value_ is any valid CSS size specification.
+
+Shorthand makes it more handy for mobile devices. And yes, type colon and no space.
 
 ## Wanna customize?
-You can customize almost everything on the on-screen-console. Just add a CSS stylesheet to your page. Here's the selectors:
+You can customize almost everything on the on-screen-console. Just add a CSS stylesheet to your page. Here's a blank template:
 
-`#on-screen-console` Consoles main body
-
-`.prompt` Input prompt
-
-`.output` output area
-
-`.debug` Output beeing generated via `console.debug()`
-
-`.warn` Output beeing generated via `console.warn()`
-
-`.error` Output beeing generated via `console.error()` and errors
-
-`.internal` Internal types like `undefined`, `null`, booean values
-
-`.number` Numbers
-
-`.object` Objects
-
-`.function` Functions
-
-`.ITEM` Output item
+```css
+#on-screen-console { /* Consoles main body */
+}
+#on-screen-console .prompt { /* Input prompt */
+}
+#on-screen-console .output { /* output area */
+}
+#on-screen-console .debug { /* Output beeing generated via console.debug() */
+}
+#on-screen-console .warn { /* Output beeing generated via console.warn() */
+}
+#on-screen-console .error { /* Output beeing generated via console.error() and errors */
+}
+#on-screen-console .internal { /* Internal types like undefined, null, booean values */
+}
+#on-screen-console .number { /* Numbers */
+}
+#on-screen-console .string { /* Strings */
+}
+#on-screen-console .object { /* Objects */
+}
+#on-screen-console .function { /* Functions */
+}
+#on-screen-console .ITEM { /* Output item */
+}
+```
