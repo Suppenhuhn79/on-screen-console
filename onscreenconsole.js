@@ -8,40 +8,55 @@ See the full license text at http://www.apache.org/licenses/LICENSE-2.0
 
 if (/\bconsole=\d\b/i.test(window.location.search) === true)
 {
-	let _osc = {};
-	_osc.version = "v1.0";
-	_osc.logLevel = Number(/\bconsole=(\d)\b/i.exec(window.location.search)[1]);
+	let _osc =
+	{
+		"VERSION": "v1.0",
+		"ELEMENT_ID": "on-screen-console",
+		"logLevel": Number(/\bconsole=(\d)\b/i.exec(window.location.search)[1]),
+		"styles":
+		{
+			"#": "background-color: #006; color: #bbb; font-family: monospace; position: fixed; top: 0px; left: 0px; width: 100%; margin: 0rem; padding: 0.5rem; z-index: " + Number.MAX_SAFE_INTEGER + ";",
+			"prompt": "background-color: inherit; color: inherit; font-family: inherit; width: 100%; border: 1px solid #666; outline: none;",
+			"output": "white-space: pre; padding: 0rem; margin: 0rem; max-height: 60vh; overflow: scroll;",
+			"warn": "color: #dd6;",
+			"error": "color: #f66;",
+			"internal": "color: #fff; font-style: italic;",
+			"number": "color: #2d2;",
+			"object": "color: #3ff;",
+			"function": "color: #acf;",
+			"ITEM": "display: inline-block; vertical-align: top; margin-right: 0.7em;",
+			"ITEM:hover": "background-color: #008;"
+		},
+		"prefixes":
+		{
+			"error": "!",
+			"warn": "!",
+			"input": "&rarr;",
+			"result": "&larr;"
+		}
+	};
 	if (_osc.logLevel > 0)
 	{
+		_osc.test = (a) => window.alert(a);
 		_osc.browserConsoleDebug = console.debug;
 		_osc.browserConsoleLog = console.log;
 		_osc.browserConsoleWarn = console.warn;
 		_osc.browserConsoleError = console.error;
-		_osc.styles =
-		{
-			"wrapper": "background-color: #006; color: #bbb; font-family: monospace; position: fixed; width: 100%; margin: 0rem; padding: 0.5rem; max-height: 60vh; overflowY: scroll; z-index: " + Number.MAX_SAFE_INTEGER + ";",
-			"input": "background-color: inherit; color: inherit; font-family: inherit; width: 100%; border: 1px solid #666; outline: none;",
-			"output": "white-space: pre; padding: 0rem; margin: 0rem;",
-			"warn": "color: #dd6;",
-			"error": "color: #f66;",
-			"internal": "color: #fff; font-style: italic;",
-			"number": "color: #4d8;",
-			"object": "color: #3ff;",
-			"function": "color: #acf;",
-			"ITEM": "display: inline-block; vertical-align: top; margin-right: 0.7em;"
-		};
-		_osc._setElementStyle = (element, style) =>
-		{
-			let rex = /(.+?):(.+?);/g;
-			let rem = rex.exec(style);
-			while (rem !== null)
-			{
-				element.style[rem[1].trim()] = rem[2].trim();
-				rem = rex.exec(style);
-			};
-		};
 		_osc._log = (kind, ...values) =>
 		{
+			function __styleElement(element, style)
+			{
+				if (style !== undefined)
+				{
+					let rex = /(.+?):(.+?);/g;
+					let rem = rex.exec(style);
+					while (rem !== null)
+					{
+						element.style[rem[1].trim()] = rem[2].trim();
+						rem = rex.exec(style);
+					};
+				};
+			};
 			function __formatSimpleType(value, kind)
 			{
 				let span = document.createElement("span");
@@ -49,8 +64,8 @@ if (/\bconsole=\d\b/i.test(window.location.search) === true)
 				let valueType = typeof value;
 				if (value === null)
 				{
-					_osc._setElementStyle(span, _osc.styles.internal);
 					span.innerHTML = "null";
+					span.classList.add("internal");
 				}
 				else
 				{
@@ -58,13 +73,13 @@ if (/\bconsole=\d\b/i.test(window.location.search) === true)
 					{
 					case "undefined":
 					case "boolean":
-						_osc._setElementStyle(span, _osc.styles.internal);
+						span.classList.add("internal");
 						break;
 					case "string":
 						if (value === "")
 						{
 							value = "&lt;empty string&gt;";
-							_osc._setElementStyle(span, _osc.styles.internal);
+							span.classList.add("internal");
 						}
 						else
 						{
@@ -77,24 +92,19 @@ if (/\bconsole=\d\b/i.test(window.location.search) === true)
 						span.innerHTML = value;
 						break;
 					case "number":
-						_osc._setElementStyle(span, _osc.styles.number);
+						span.classList.add("number");
 						span.innerHTML = value;
 						break;
 					case "function":
-						_osc._setElementStyle(span, _osc.styles["function"]);
-						let funcBody = value.toString().trim();
-						if (funcBody.startsWith("function") === false)
-						{
-							funcBody = "function" + funcBody;
-						};
-						span.innerHTML = funcBody.substr(0, funcBody.indexOf(")") + 1).replaceAll("\n", "").replaceAll("\r", "");
+						span.classList.add("function");
+						span.innerHTML = "function" + /\(.*?\)/.exec(value.toString())[0].replaceAll(/[\r\n]/g, "");
 						break;
 					default:
-						_osc._setElementStyle(span, _osc.styles.object);
+						span.classList.add("object");
 						span.innerHTML = "[object " + value.constructor.name + "]";
 					};
 				};
-				_osc._setElementStyle(span, _osc.styles.ITEM);
+				span.classList.add("ITEM");
 				return span;
 			};
 			function __formattedValue(value, kind)
@@ -112,15 +122,24 @@ if (/\bconsole=\d\b/i.test(window.location.search) === true)
 						let titleSpan = document.createElement("span");
 						titleSpan.innerHTML = (value.constructor === Array) ? "Array(" + value.length + ")\n" : value.toString() + "\n";
 						span.appendChild(titleSpan);
-						if (value instanceof Error === true)
+						if ((value instanceof Error) === true)
 						{
-							_osc._setElementStyle(span, _osc.styles.error);
+							titleSpan.innerHTML = value;
+							if (value.stack !== undefined)
+							{
+								let stackSpan = document.createElement("ul");
+								__styleElement(stackSpan, "list-style: none; margin: 0rem; padding: 0rem;");
+								let li = document.createElement("li");
+								stackSpan.appendChild(li);
+								li.innerHTML = value.stack;
+								span.appendChild(stackSpan);
+							};
 						}
 						else
 						{
-							_osc._setElementStyle(titleSpan, _osc.styles.object);
+							titleSpan.classList.add("object");
 							let ul = document.createElement("ul");
-							_osc._setElementStyle(ul, "list-style: none; margin: 0rem; padding-left: 1.4em;");
+							__styleElement(ul, "list-style: none; margin: 0rem; padding-left: 1.4em;");
 							for (let m in value)
 							{
 								{
@@ -139,39 +158,31 @@ if (/\bconsole=\d\b/i.test(window.location.search) === true)
 						span = __formatSimpleType(value, kind);
 					};
 				};
-				_osc._setElementStyle(span, _osc.styles.ITEM);
+				span.classList.add("ITEM");
 				return span;
 			};
 			let div = document.createElement("div");
-			_osc._setElementStyle(div, _osc.styles.output + "display: block;");
+			__styleElement(div, "display: block;");
 			let prefix = document.createElement("span");
-			_osc._setElementStyle(prefix, "display: inline-block; vertical-align: top;");
+			__styleElement(prefix, "white-space: nowrap; display: inline-block; vertical-align: top;");
 			let content = document.createElement("span");
-			_osc._setElementStyle(content, "display: inline-block; vertical-align: top;");
-			prefix.innerHTML = "&nbsp;";
+			__styleElement(content, "display: inline-block; vertical-align: top;");
+			prefix.innerHTML = (_osc.prefixes[kind] !== undefined) ? _osc.prefixes[kind] : "&nbsp;";
+			prefix.classList.add(kind);
 			switch (kind)
 			{
-			case "error":
-				prefix.innerHTML = "!";
-				_osc._setElementStyle(div, _osc.styles.error);
-				content = __formattedValue(values[0], kind);
-				break;
-			case "warn":
-				_osc._setElementStyle(div, _osc.styles.warn);
-				prefix.innerHTML = "!";
-				_osc._setElementStyle(content, _osc.styles.warn);
-				content = __formattedValue(values[0], kind);
-				break;
 			case "input":
-				prefix.innerHTML = "&rarr;"
-					content.innerHTML = values[0];
+				content.innerHTML = values[0];
 				break;
 			case "result":
-				prefix.innerHTML = "&larr;";
 				content = __formattedValue(values[0], kind);
+				if ((values[0] instanceof Error) === true)
+				{
+					content.classList.add("error");
+				};
 				break;
-			case "debug":
 			default:
+				content.classList.add(kind);
 				for (let v = 0, vv = values[0].length; v < vv; v += 1)
 				{
 					content.appendChild(__formattedValue(values[0][v], kind));
@@ -183,24 +194,24 @@ if (/\bconsole=\d\b/i.test(window.location.search) === true)
 			_osc.output.appendChild(div);
 		};
 		/* hijack browser default console functionions */
-		console.error = (errorText) =>
+		console.error = (...values) =>
 		{
-			_osc.browserConsoleError(errorText);
-			_osc._log("error", errorText);
+			_osc.browserConsoleError.apply(this, values);
+			_osc._log("error", values);
 		};
 		if (_osc.logLevel <= 3)
 		{
-			console.warn = (text) =>
+			console.warn = (...values) =>
 			{
-				_osc.browserConsoleWarn(text);
-				_osc._log("warn", text);
+				_osc.browserConsoleWarn.apply(this, values);
+				_osc._log("warn", values);
 			};
 			if (_osc.logLevel <= 2)
 			{
 				console.log = (...values) =>
 				{
 					_osc.browserConsoleLog.apply(this, values);
-					_osc._log("default", values);
+					_osc._log("info", values);
 				};
 				if (_osc.logLevel = 1)
 				{
@@ -213,31 +224,38 @@ if (/\bconsole=\d\b/i.test(window.location.search) === true)
 			};
 		};
 		/* init */
-		_osc.wrapper = document.createElement("div");
-		_osc.wrapper.id = "on-screen-console";
-		_osc._setElementStyle(_osc.wrapper, _osc.styles.wrapper);
+		_osc.body = document.createElement("div");
+		_osc.body.id = _osc.ELEMENT_ID;
+		_osc.body.classList.add("body");
 		_osc.output = document.createElement("div");
-		_osc.input = document.createElement("input");
-		_osc._setElementStyle(_osc.input, _osc.styles.input);
-		_osc.wrapper.appendChild(_osc.output);
-		_osc.wrapper.appendChild(_osc.input);
-		document.body.appendChild(_osc.wrapper);
+		_osc.output.classList.add("output");
+		_osc.prompt = document.createElement("input");
+		_osc.prompt.classList.add("prompt");
+		_osc.prompt.setAttribute("spellcheck", "false");
+		_osc.body.appendChild(_osc.output);
+		_osc.body.appendChild(_osc.prompt);
 		_osc.history = [];
 		_osc.historyPosition = 0;
-		_osc.input.onkeydown = (keypressEvent) =>
+		_osc.prompt.onkeydown = (keypressEvent) =>
 		{
 			switch (keypressEvent.keyCode)
 			{
+				case 33: /* pg up */
+				_osc.output.scrollBy(0, 0 - (_osc.output.clientHeight - 10));
+				break;
+				case 34: /* pg dn*/
+				_osc.output.scrollBy(0, (_osc.output.clientHeight -10));
+				break;
 			case 38: /* up */
 				if (_osc.historyPosition > 0)
 				{
 					_osc.historyPosition -= 1;
-					_osc.input.value = _osc.history[_osc.historyPosition];
+					_osc.prompt.value = _osc.history[_osc.historyPosition];
 					setTimeout(() =>
 					{
-						let inputLength = _osc.input.value.length;
-						_osc.input.selectionStart = inputLength;
-						_osc.selectionEnd = inputLength;
+						let inputLength = _osc.prompt.value.length;
+						_osc.prompt.selectionStart = inputLength;
+						_osc.prompt.selectionEnd = inputLength;
 					}, 1);
 				};
 				break;
@@ -247,17 +265,17 @@ if (/\bconsole=\d\b/i.test(window.location.search) === true)
 					_osc.historyPosition += 1;
 					if (_osc.historyPosition === _osc.history.length)
 					{
-						_osc.input.value = "";
+						_osc.prompt.value = "";
 					}
 					else
 					{
-						_osc.input.value = _osc.history[_osc.historyPosition];
+						_osc.prompt.value = _osc.history[_osc.historyPosition];
 					};
 				};
 				break;
 			};
 		};
-		_osc.input.onkeypress = (keypressEvent) =>
+		_osc.prompt.onkeypress = (keypressEvent) =>
 		{
 			if (keypressEvent.keyCode === 13)
 			{
@@ -274,10 +292,10 @@ if (/\bconsole=\d\b/i.test(window.location.search) === true)
 						};
 						break;
 					case ":exit":
-						document.body.removeChild(_osc.wrapper);
+						document.body.removeChild(_osc.body);
 						break;
 					default:
-						_osc._log("Unrecognized command " + cmd);
+						_osc._log("error", ["Unrecognized command " + cmd]);
 					};
 				}
 				else
@@ -298,13 +316,26 @@ if (/\bconsole=\d\b/i.test(window.location.search) === true)
 					};
 				};
 				keypressEvent.target.value = "";
-				_osc.input.focus();
-				_osc.wrapper.scrollTo(0, _osc.wrapper.scrollHeight);
+				_osc.prompt.focus();
+				_osc.output.scrollTo(0, _osc.output.scrollHeight);
 			};
 		};
-		_osc._log("default", ["Welcome to OnScreenConsole " + _osc.version + "!"]);
-		_osc._log("default", ["Copyright 2021 Christoph Zager"]);
-		_osc._log("default", ["Licensed under the Apache License, Version 2.0"]);
-		_osc._log("default", ["https://github.com/suppenhuhn79/on-screen-console"]);
+		window.onerror = (msg, url, lineNo, columnNo, error) => _osc._log("error", [error]);
+		window.addEventListener("load", (event) =>
+		{
+			document.body.appendChild(_osc.body);
+			let style = document.createElement("style");
+			document.head.insertBefore(style, document.head.firstChild);
+			for (let rules in _osc.styles)
+			{
+				let selector = (rules.startsWith("#") === true) ? "#" + _osc.ELEMENT_ID : "#" + _osc.ELEMENT_ID + " ." + rules;
+				style.sheet.insertRule(selector + " { " + _osc.styles[rules] + " }");
+			};
+		}
+		);
+		_osc._log("info", ["Welcome to OnScreenConsole " + _osc.VERSION + "!"]);
+		_osc._log("info", ["Copyright 2021 Christoph Zager"]);
+		_osc._log("info", ["Licensed under the Apache License, Version 2.0"]);
+		_osc._log("info", ["https://github.com/suppenhuhn79/on-screen-console"]);
 	};
 };
