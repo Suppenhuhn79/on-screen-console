@@ -15,16 +15,16 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 		logLevel: Number(/\bconsole=(\d)\b/i.exec(window.location.search)[1]),
 		styles:
 		{
-			"#": "background-color:#006;color:#bbb;font-family:monospace;font-size:small;position:fixed;top:0px;left:0px;width:100%;margin:0rem;padding:0.5rem;z-index:" + Number.MAX_SAFE_INTEGER + ";",
+			"#": "background-color:#006;color:#ccc;font-family:monospace;font-size:0.8rem;position:fixed;top:0px;left:0px;width:100%;margin:0rem;padding:0.5rem;box-sizing:border-box;z-index:" + Number.MAX_SAFE_INTEGER + ";",
 			"prompt": "background-color:inherit;color:inherit;font-family:inherit;font-size:inherit;width:100%;border:1px solid #666;outline:none;",
-			"output": "white-space:pre;padding:0rem;margin:0rem;max-height:60vh;overflow:scroll;",
+			"output": "white-space:pre;padding:0rem;margin:0rem;max-height:30vh;overflow:scroll;",
 			"warn": "color:#dd6;",
 			"error": "color:#f66;",
 			"internal": "color:#fff;font-style:italic;",
 			"number": "color:#2d2;",
 			"string": "",
 			"object": "color:#3ff;",
-			"function": "color:#acf;",
+			"function": "color:#acf;font-weight:bold;",
 			"ITEM": "display:inline-block;vertical-align:top;margin-right:0.7em;",
 			"ITEM:hover": "background-color:#337;"
 		},
@@ -218,6 +218,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 			div.appendChild(prefix);
 			div.appendChild(content);
 			_osc.output.appendChild(div);
+			_osc.output.scrollTo(0, _osc.output.scrollHeight);
 		};
 		/* hijack browser default console functionions */
 		console.error = (...vals) =>
@@ -307,8 +308,9 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 			{
 				keypressEvent.stopPropagation();
 				let cmd = keypressEvent.target.value;
-				let intCmd = /^:(\w+)(?:\s+(.+))?/.exec(cmd);
+				let intCmd = /^\.(\w+)(?:\s+(.+))?/.exec(cmd);
 				_osc.historyPosition = _osc.history.push(cmd);
+				_osc._log("input", cmd);
 				if (intCmd !== null)
 				{
 					switch (intCmd[1])
@@ -341,7 +343,6 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 				}
 				else
 				{
-					_osc._log("input", cmd);
 					try
 					{
 						let result = eval(cmd);
@@ -355,12 +356,11 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 						console.error(ex);
 					};
 				};
-				keypressEvent.target.value = "";
+				_osc.prompt.value = "";
 				_osc.prompt.focus();
-				_osc.output.scrollTo(0, _osc.output.scrollHeight);
 			};
 		};
-		window.onerror = (msg, url, lineNo, columnNo, error) => _osc._log("error", [error]);
+		window.onerror = (msg, url, lineNo, columnNo, error) => _osc._log("error", (error instanceof Error) ? [msg] : [msg, url, lineNo, columnNo]);
 		window.addEventListener("load", (event) =>
 		{
 			document.body.appendChild(_osc.body);
