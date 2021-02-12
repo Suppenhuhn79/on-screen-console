@@ -13,6 +13,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 		VERSION: "v1.0",
 		ELEMENT_ID: "on-screen-console",
 		logLevel: Number(/\bconsole=(\d)\b/i.exec(window.location.search)[1]),
+		maxDepth: 2,
 		styles:
 		{
 			"#": "background-color:#006;color:#ccc;font-family:monospace;font-size:0.8rem;position:fixed;top:0px;left:0px;width:100%;margin:0rem;padding:0.5rem;box-sizing:border-box;z-index:" + Number.MAX_SAFE_INTEGER + ";",
@@ -24,6 +25,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 			"number": "color:#2d2;",
 			"string": "",
 			"object": "color:#3ff;",
+			"object.expandable:hover": "text-decoration:underline;cursor:pointer;",
 			"function": "color:#acf;font-weight:bold;",
 			"ITEM": "display:inline-block;vertical-align:top;margin-right:0.7em;",
 			"ITEM:hover": "background-color:#337;"
@@ -57,10 +59,13 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 					};
 				};
 			};
-			function __formatSimpleType(val, rel)
+			function __escapeHtml(val)
+			{
+				return String(val).replace("<", "&lt;").replace(">", "&gt;");
+			};
+			function __formatSimpleType(val, rel, depth)
 			{
 				let span = document.createElement("span");
-				span.innerHTML = val;
 				if (val === null)
 				{
 					span.innerHTML = "null";
@@ -73,6 +78,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 					case "undefined":
 					case "boolean":
 						span.classList.add("internal");
+						span.innerHTML = val;
 						break;
 					case "string":
 						if (val === "")
@@ -99,9 +105,19 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 						span.classList.add("function");
 						span.innerHTML = "function" + /\(.*?\)/.exec(val.toString())[0].replaceAll(/[\r\n]/g, "");
 						break;
+					case "object":
+						if (depth < _osc.maxDepth)
+						{
+							span.appendChild(__formattedValue(val, rel, depth + 1));
+						}
+						else
+						{
+							span.innerHTML = val.constructor.name;
+							span.classList.add("object");
+						};
+						break;
 					default:
-						span.classList.add("object");
-						span.innerHTML = val.constructor.name;
+						span.innerHTML = val;
 					};
 				};
 				return span;
@@ -117,11 +133,11 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 				};
 				if (obj instanceof HTMLElement)
 				{
-					result.push(/<.+?>/.exec(obj.outerHTML)[0].replace("<", "&lt;").replace(">", "&gt;"));
+					result.push(__escapeHtml(/<.+?>/.exec(obj.outerHTML)[0]));
 				};
 				return result;
 			};
-			function __formattedValue(val, rel)
+			function __formattedValue(val, rel, depth)
 			{
 				let span = document.createElement("span");
 				if (val === null)
@@ -134,16 +150,16 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 					{
 					case "object":
 						let titleSpan = document.createElement("span");
-						titleSpan.innerHTML = (val.constructor === Array) ? "Array(" + val.length + ")" : val.constructor.name;
+						titleSpan.innerHTML = ((val.constructor === Array) ? "Array(" + val.length + ")" : val.constructor.name) + ((depth <= _osc.maxDepth) ? " {&hellip;}" : "");
 						span.appendChild(titleSpan);
 						if (val instanceof Error)
 						{
 							span.classList.add("error");
-							titleSpan.innerHTML = val;
+							titleSpan.innerHTML = __escapeHtml(val);
 							if (val.stack !== undefined)
 							{
 								let stackSpan = document.createElement("ul");
-								__styleElement(stackSpan, "list-style: none; margin: 0rem; padding: 0rem;");
+								__styleElement(stackSpan, "list-style:none;margin:0rem;padding:0rem;");
 								let li = document.createElement("li");
 								stackSpan.appendChild(li);
 								li.innerHTML = val.stack;
@@ -153,46 +169,54 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 						else
 						{
 							titleSpan.classList.add("object");
+							if (depth <= _osc.maxDepth)
+							{
+								titleSpan.classList.add("expandable");
+							};
 							let ul = document.createElement("ul");
-							__styleElement(ul, "list-style: none; margin: 0rem; padding-left: 1.4em;");
-							let classMap = __classMap(val);
-							if (classMap.length > 0)
+							__styleElement(ul, "list-style:none;margin:0rem;padding-left:1.4em;display:none;");
+							for (let k of __classMap(val))
 							{
-								for (let m of classMap)
-								{
-									let li = document.createElement("li");
-									li.innerHTML = m;
-									ul.appendChild(li);
-								};
-							}
-							else
+								let li = document.createElement("li");
+								__styleElement(li, "font-weight:bold;");
+								li.innerHTML = k;
+								ul.appendChild(li);
+							};
+							for (let m in val)
 							{
-								for (let m in val)
+								let li = document.createElement("li");
+								let keySpan = document.createElement("span");
+								keySpan.innerHTML = m + ":&nbsp;";
+								li.appendChild(keySpan);
+								try
 								{
-									let li = document.createElement("li");
-									let keySpan = document.createElement("span");
-									keySpan.innerHTML = m + ":&nbsp;";
-									li.appendChild(keySpan);
-									li.appendChild(__formatSimpleType(val[m], "result"));
-									ul.appendChild(li);
+									li.appendChild(__formatSimpleType(val[m], "result", depth));
+								}
+								catch (ex)
+								{
+									let e = __formatSimpleType(val[m], "error", Number.MAX_SAFE_INTEGER);
+									e.style.textDecoration = "line-through";
+									li.appendChild(e);
 								};
+								ul.appendChild(li);
 							};
 							span.appendChild(ul);
+							titleSpan.onclick = _osc.toggleUl;
 						};
 						break;
 					default:
-						span = __formatSimpleType(val, rel);
+						span = __formatSimpleType(val, rel, depth);
 					};
 				};
 				span.classList.add("ITEM");
 				return span;
 			};
 			let div = document.createElement("div");
-			__styleElement(div, "display: block;");
+			__styleElement(div, "display:block;");
 			let prefix = document.createElement("span");
-			__styleElement(prefix, "white-space: nowrap; display: inline-block; vertical-align: top;");
+			__styleElement(prefix, "white-space:nowrap;display:inline-block;vertical-align:top;");
 			let content = document.createElement("span");
-			__styleElement(content, "display: inline-block; vertical-align: top;");
+			__styleElement(content, "display:inline-block;vertical-align: top;");
 			prefix.innerHTML = (_osc.prefixes[rel] !== undefined) ? _osc.prefixes[rel] : "&nbsp;";
 			prefix.classList.add(rel);
 			switch (rel)
@@ -201,7 +225,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 				content.innerHTML = vals[0];
 				break;
 			case "result":
-				content = __formattedValue(vals[0], rel);
+				content = __formattedValue(vals[0], rel, 0);
 				if (vals[0]instanceof Error)
 				{
 					content.classList.add("error");
@@ -211,7 +235,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 				content.classList.add(rel);
 				for (let v = 0, vv = vals[0].length; v < vv; v += 1)
 				{
-					content.appendChild(__formattedValue(vals[0][v], rel));
+					content.appendChild(__formattedValue(vals[0][v], rel, 0));
 				};
 			};
 			prefix.innerHTML += "&nbsp;";
@@ -219,6 +243,14 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 			div.appendChild(content);
 			_osc.output.appendChild(div);
 			_osc.output.scrollTo(0, _osc.output.scrollHeight);
+		};
+		_osc.toggleUl = (evt) =>
+		{
+			let ul = evt.target.parentElement.querySelector("ul");
+			if (ul !== null)
+			{
+				ul.style.display = (ul.style.display === "none") ? "initial" : "none";
+			};
 		};
 		/* hijack browser default console functionions */
 		console.error = (...vals) =>
@@ -315,24 +347,27 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 				{
 					switch (intCmd[1])
 					{
-					case "clr":
+					case "clr": /* clear */
 						for (let e of _osc.output.querySelectorAll("div"))
 						{
 							_osc.output.removeChild(e);
 						};
 						break;
-					case "x":
+					case "fs": /* font size */
+						_osc.body.style.fontSize = intCmd[2];
+						break;
+					case "mh": /* max output height */
+						_osc.output.style.maxHeight = intCmd[2] +"vh";
+						break;
+					case "od": /* max object memeber depth */
+						_osc.maxDepth = intCmd[2];
+						break;
+					case "x": /* exit */
 						console.debug = _osc.browserDbg;
 						console.log = _osc.browserLog;
 						console.warn = _osc.browserWrn;
 						console.error = _osc.browserErr;
 						document.body.removeChild(_osc.body);
-						break;
-					case "mh":
-						_osc.output.style.maxHeight = intCmd[2];
-						break;
-					case "fs":
-						_osc.body.style.fontSize = intCmd[2];
 						break;
 					case "zi":
 						_osc.body.style.zIndex = intCmd[2];
@@ -368,8 +403,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 			document.head.insertBefore(style, document.head.firstChild);
 			for (let rules in _osc.styles)
 			{
-				let selector = (rules.startsWith("#")) ? "#" + _osc.ELEMENT_ID : "#" + _osc.ELEMENT_ID + " ." + rules;
-				style.sheet.insertRule(selector + " { " + _osc.styles[rules] + " }");
+				style.sheet.insertRule("#" + _osc.ELEMENT_ID + ((rules.startsWith("#")) ? "" : " ." + rules) + " { " + _osc.styles[rules] + " }");
 			};
 		}
 		);
