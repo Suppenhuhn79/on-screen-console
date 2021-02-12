@@ -130,6 +130,9 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 				case "WINDOW":
 					result.push(obj.location);
 					break;
+				case "DATE":
+					result.push(obj.toString());
+					break;
 				};
 				if (obj instanceof HTMLElement)
 				{
