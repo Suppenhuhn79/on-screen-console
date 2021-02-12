@@ -23,7 +23,7 @@ https://suppenhuhn79.github.io/on-screen-console/demo-page.html?console=1
 
 `.zi number` sets the z-index of the on-screen-console. Initially console is the very top most element. Be careful to not set the z-index too low.
 
-Shorthand makes it more handy for mobile devices. And yes, type colon and no space.
+Shorthand makes it more handy for mobile devices.
 
 ## Wanna customize?
 You can customize almost everything on the on-screen-console. Just add a CSS stylesheet to your page. Here's a blank template:
