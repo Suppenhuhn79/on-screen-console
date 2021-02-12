@@ -10,7 +10,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 {
 	let _osc =
 	{
-		VERSION: "v1.0",
+		VERSION: "v1.1",
 		ELEMENT_ID: "on-screen-console",
 		logLevel: Number(/\bconsole=(\d)\b/i.exec(window.location.search)[1]),
 		maxDepth: 2,
