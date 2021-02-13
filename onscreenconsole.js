@@ -325,14 +325,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 				if (_osc.historyPosition < _osc.history.length)
 				{
 					_osc.historyPosition += 1;
-					if (_osc.historyPosition === _osc.history.length)
-					{
-						_osc.prompt.value = "";
-					}
-					else
-					{
-						_osc.prompt.value = _osc.history[_osc.historyPosition];
-					};
+					_osc.prompt.value = (_osc.historyPosition === _osc.history.length) ? "": _osc.prompt.value = _osc.history[_osc.historyPosition];
 				};
 				break;
 			};
