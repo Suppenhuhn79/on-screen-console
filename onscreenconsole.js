@@ -48,11 +48,11 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 		{
 			function __styleElement(element, style)
 			{
-				if (style !== undefined)
+				if (!!style)
 				{
 					let rex = /(.+?):(.+?);/g;
 					let rem = rex.exec(style);
-					while (rem !== null)
+					while (!!rem)
 					{
 						element.style[rem[1].trim()] = rem[2].trim();
 						rem = rex.exec(style);
@@ -159,7 +159,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 						{
 							span.classList.add("error");
 							titleSpan.innerHTML = __escapeHtml(val);
-							if (val.stack !== undefined)
+							if (!!val.stack)
 							{
 								let stackSpan = document.createElement("ul");
 								__styleElement(stackSpan, "list-style:none;margin:0rem;padding:0rem;");
@@ -220,7 +220,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 			__styleElement(prefix, "white-space:nowrap;display:inline-block;vertical-align:top;");
 			let content = document.createElement("span");
 			__styleElement(content, "display:inline-block;vertical-align: top;");
-			prefix.innerHTML = (_osc.prefixes[rel] !== undefined) ? _osc.prefixes[rel] : "&nbsp;";
+			prefix.innerHTML = (!!_osc.prefixes[rel]) ? _osc.prefixes[rel] : "&nbsp;";
 			prefix.classList.add(rel);
 			switch (rel)
 			{
@@ -250,7 +250,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 		_osc.toggleUl = (evt) =>
 		{
 			let ul = evt.target.parentElement.querySelector("ul");
-			if (ul !== null)
+			if (!!ul)
 			{
 				ul.style.display = (ul.style.display === "none") ? "initial" : "none";
 			};
@@ -346,7 +346,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 				let intCmd = /^\.(\w+)(?:\s+(.+))?/.exec(cmd);
 				_osc.historyPosition = _osc.history.push(cmd);
 				_osc._log("input", cmd);
-				if (intCmd !== null)
+				if (!!intCmd)
 				{
 					switch (intCmd[1])
 					{
