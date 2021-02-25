@@ -1,0 +1,27 @@
+#on-screen-console { /* Consoles main body */
+	/* allign on-screen-console at page bottom: */
+	top: auto;
+	bottom: 0px;
+}
+#on-screen-console .prompt { /* Input prompt */
+}
+#on-screen-console .output { /* output area */
+}
+#on-screen-console .debug { /* Output beeing generated via console.debug() */
+}
+#on-screen-console .warn { /* Output beeing generated via console.warn() */
+}
+#on-screen-console .error { /* Output beeing generated via console.error() and errors */
+}
+#on-screen-console .internal { /* Internal types like undefined, null, booean values */
+}
+#on-screen-console .number { /* Numbers */
+}
+#on-screen-console .string { /* Strings */
+}
+#on-screen-console .object { /* Objects */
+}
+#on-screen-console .function { /* Functions */
+}
+#on-screen-console .ITEM { /* Output item */
+}

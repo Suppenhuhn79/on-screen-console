@@ -6,11 +6,11 @@ Copyright 2021 Christoph Zager, licensed under the Apache License, Version 2.0
 See the full license text at http://www.apache.org/licenses/LICENSE-2.0
  */
 
-if (/\bconsole=\d\b/i.test(window.location.search))
+if (/\bconsole=[1-4]\b/i.test(window.location.search))
 {
-	let _osc =
+	let $0 =
 	{
-		VERSION: "v1.1",
+		VERSION: "v1.2",
 		ELEMENT_ID: "on-screen-console",
 		logLevel: Number(/\bconsole=(\d)\b/i.exec(window.location.search)[1]),
 		maxDepth: 2,
@@ -38,21 +38,30 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 			"result": "&larr;"
 		}
 	};
-	if (_osc.logLevel > 0)
+	if ($0.logLevel > 0)
 	{
-		_osc.browserDbg = console.debug;
-		_osc.browserLog = console.log;
-		_osc.browserWrn = console.warn;
-		_osc.browserErr = console.error;
-		_osc._log = (rel, ...vals) =>
+		$0.browserDbg = console.debug;
+		$0.browserLog = console.log;
+		$0.browserWrn = console.warn;
+		$0.browserErr = console.error;
+		$0._cache = (key, val) =>
+		{
+			if (!!localStorage)
+			{
+				let c = JSON.parse(localStorage.getItem($0.ELEMENT_ID)) ?? {};
+				c[key] = val
+					localStorage.setItem($0.ELEMENT_ID, JSON.stringify(c));
+			};
+		};
+		$0._log = (rel, ...vals) =>
 		{
 			function __styleElement(element, style)
 			{
-				if (!!style)
+				if (style !== undefined)
 				{
 					let rex = /(.+?):(.+?);/g;
 					let rem = rex.exec(style);
-					while (!!rem)
+					while (rem !== null)
 					{
 						element.style[rem[1].trim()] = rem[2].trim();
 						rem = rex.exec(style);
@@ -106,7 +115,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 						span.innerHTML = "function" + /\(.*?\)/.exec(val.toString())[0].replaceAll(/[\r\n]/g, "");
 						break;
 					case "object":
-						if (depth < _osc.maxDepth)
+						if (depth < $0.maxDepth)
 						{
 							span.appendChild(__formattedValue(val, rel, depth + 1));
 						}
@@ -153,13 +162,13 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 					{
 					case "object":
 						let titleSpan = document.createElement("span");
-						titleSpan.innerHTML = ((val.constructor === Array) ? "Array(" + val.length + ")" : val.constructor.name) + ((depth <= _osc.maxDepth) ? " {&hellip;}" : "");
+						titleSpan.innerHTML = ((val.constructor === Array) ? "Array(" + val.length + ")" : val.constructor.name) + ((depth <= $0.maxDepth) ? " {&hellip;}" : "");
 						span.appendChild(titleSpan);
 						if (val instanceof Error)
 						{
 							span.classList.add("error");
 							titleSpan.innerHTML = __escapeHtml(val);
-							if (!!val.stack)
+							if (val.stack !== undefined)
 							{
 								let stackSpan = document.createElement("ul");
 								__styleElement(stackSpan, "list-style:none;margin:0rem;padding:0rem;");
@@ -172,7 +181,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 						else
 						{
 							titleSpan.classList.add("object");
-							if (depth <= _osc.maxDepth)
+							if (depth <= $0.maxDepth)
 							{
 								titleSpan.classList.add("expandable");
 							};
@@ -204,7 +213,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 								ul.appendChild(li);
 							};
 							span.appendChild(ul);
-							titleSpan.onclick = _osc.toggleUl;
+							titleSpan.onclick = $0.toggleUl;
 						};
 						break;
 					default:
@@ -220,7 +229,7 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 			__styleElement(prefix, "white-space:nowrap;display:inline-block;vertical-align:top;");
 			let content = document.createElement("span");
 			__styleElement(content, "display:inline-block;vertical-align: top;");
-			prefix.innerHTML = (!!_osc.prefixes[rel]) ? _osc.prefixes[rel] : "&nbsp;";
+			prefix.innerHTML = $0.prefixes[rel] ?? "&nbsp;";
 			prefix.classList.add(rel);
 			switch (rel)
 			{
@@ -244,13 +253,13 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 			prefix.innerHTML += "&nbsp;";
 			div.appendChild(prefix);
 			div.appendChild(content);
-			_osc.output.appendChild(div);
-			_osc.output.scrollTo(0, _osc.output.scrollHeight);
+			$0.output.appendChild(div);
+			$0.output.scrollTo(0, $0.output.scrollHeight);
 		};
-		_osc.toggleUl = (evt) =>
+		$0.toggleUl = (evt) =>
 		{
 			let ul = evt.target.parentElement.querySelector("ul");
-			if (!!ul)
+			if (ul !== null)
 			{
 				ul.style.display = (ul.style.display === "none") ? "initial" : "none";
 			};
@@ -258,128 +267,139 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 		/* hijack browser default console functionions */
 		console.error = (...vals) =>
 		{
-			_osc.browserErr.apply(this, vals);
-			_osc._log("error", vals);
+			$0.browserErr.apply(this, vals);
+			$0._log("error", vals);
 		};
-		if (_osc.logLevel <= 3)
+		if ($0.logLevel <= 3)
 		{
 			console.warn = (...vals) =>
 			{
-				_osc.browserWrn.apply(this, vals);
-				_osc._log("warn", vals);
+				$0.browserWrn.apply(this, vals);
+				$0._log("warn", vals);
 			};
-			if (_osc.logLevel <= 2)
+			if ($0.logLevel <= 2)
 			{
 				console.log = (...vals) =>
 				{
-					_osc.browserLog.apply(this, vals);
-					_osc._log("info", vals);
+					$0.browserLog.apply(this, vals);
+					$0._log("info", vals);
 				};
-				if (_osc.logLevel = 1)
+				if ($0.logLevel = 1)
 				{
 					console.debug = (...vals) =>
 					{
-						_osc.browserDbg.apply(this, vals);
-						_osc._log("debug", vals);
+						$0.browserDbg.apply(this, vals);
+						$0._log("debug", vals);
 					};
 				};
 			};
 		};
 		/* init */
-		_osc.body = document.createElement("div");
-		_osc.body.id = _osc.ELEMENT_ID;
-		_osc.body.classList.add("body");
-		_osc.output = document.createElement("div");
-		_osc.output.classList.add("output");
-		_osc.prompt = document.createElement("input");
-		_osc.prompt.classList.add("prompt");
-		_osc.prompt.setAttribute("spellcheck", "false");
-		_osc.body.appendChild(_osc.output);
-		_osc.body.appendChild(_osc.prompt);
-		_osc.history = [];
-		_osc.historyPosition = 0;
-		_osc.prompt.onkeydown = (keypressEvent) =>
+		$0.body = document.createElement("div");
+		$0.body.id = $0.ELEMENT_ID;
+		$0.body.classList.add("body");
+		$0.output = document.createElement("div");
+		$0.output.classList.add("output");
+		$0.prompt = document.createElement("input");
+		$0.prompt.classList.add("prompt");
+		$0.prompt.setAttribute("spellcheck", "false");
+		$0.body.appendChild($0.output);
+		$0.body.appendChild($0.prompt);
+		$0.history = [];
+		$0.historyPosition = 0;
+		$0.execIntCmd = (cmd, arg) =>
+		{
+			let sizeArg = /([\d\.]+)(\w*)?/.exec(arg);
+			let cmds =
+			{
+				"c": () =>
+				{
+					while (!!$0.output.firstElementChild)
+						$0.output.firstElementChild.remove();
+				},
+				"fs": () => $0.body.style.fontSize = sizeArg[1] + (sizeArg[2] ?? "rem"),
+				"mh": () => $0.output.style.maxHeight = sizeArg[1] + (sizeArg[2] ?? "vh"),
+				"d": () => $0.maxDepth = arg,
+				"x": () =>
+				{
+					console.debug = $0.browserDbg;
+					console.log = $0.browserLog;
+					console.warn = $0.browserWrn;
+					console.error = $0.browserErr;
+					document.body.removeChild($0.body);
+				},
+				"zi": () => $0.body.style.zIndex = arg
+			};
+			return (!!cmds[cmd]) ? (cmds[cmd]() ?? true) : false;
+		};
+		$0.prompt.onkeydown = (keypressEvent) =>
 		{
 			switch (keypressEvent.keyCode)
 			{
 			case 33: /* pg up */
-				_osc.output.scrollBy(0, 0 - (_osc.output.clientHeight - 10));
+				$0.output.scrollBy(0, 0 - ($0.output.clientHeight - 10));
 				break;
 			case 34: /* pg dn*/
-				_osc.output.scrollBy(0, (_osc.output.clientHeight - 10));
+				$0.output.scrollBy(0, ($0.output.clientHeight - 10));
 				break;
 			case 38: /* up */
-				if (_osc.historyPosition > 0)
+				if ($0.historyPosition > 0)
 				{
-					_osc.historyPosition -= 1;
-					_osc.prompt.value = _osc.history[_osc.historyPosition];
+					$0.historyPosition -= 1;
+					$0.prompt.value = $0.history[$0.historyPosition];
 					setTimeout(() =>
 					{
-						let inputLength = _osc.prompt.value.length;
-						_osc.prompt.selectionStart = inputLength;
-						_osc.prompt.selectionEnd = inputLength;
+						let inputLength = $0.prompt.value.length;
+						$0.prompt.selectionStart = inputLength;
+						$0.prompt.selectionEnd = inputLength;
 					}, 1);
 				};
 				break;
 			case 40: /* dn */
-				if (_osc.historyPosition < _osc.history.length)
+				if ($0.historyPosition < $0.history.length)
 				{
-					_osc.historyPosition += 1;
-					_osc.prompt.value = (_osc.historyPosition === _osc.history.length) ? "": _osc.prompt.value = _osc.history[_osc.historyPosition];
+					$0.historyPosition += 1;
+					if ($0.historyPosition === $0.history.length)
+					{
+						$0.prompt.value = "";
+					}
+					else
+					{
+						$0.prompt.value = $0.history[$0.historyPosition];
+					};
 				};
 				break;
 			};
 		};
-		_osc.prompt.onkeypress = (keypressEvent) =>
+		$0.prompt.onkeypress = (keypressEvent) =>
 		{
 			if (keypressEvent.keyCode === 13)
 			{
 				keypressEvent.stopPropagation();
 				let cmd = keypressEvent.target.value;
 				let intCmd = /^\.(\w+)(?:\s+(.+))?/.exec(cmd);
-				_osc.historyPosition = _osc.history.push(cmd);
-				_osc._log("input", cmd);
-				if (!!intCmd)
+				$0.historyPosition = ($0.history[$0.history.length - 1] !== cmd) ? $0.history.push(cmd) : $0.history.length;
+				$0._log("input", cmd);
+				if (intCmd !== null)
 				{
-					switch (intCmd[1])
+					if ($0.execIntCmd(intCmd[1], intCmd[2]) === false)
 					{
-					case "clr": /* clear */
-						for (let e of _osc.output.querySelectorAll("div"))
-						{
-							_osc.output.removeChild(e);
-						};
-						break;
-					case "fs": /* font size */
-						_osc.body.style.fontSize = intCmd[2];
-						break;
-					case "mh": /* max output height */
-						_osc.output.style.maxHeight = intCmd[2] +"vh";
-						break;
-					case "od": /* max object memeber depth */
-						_osc.maxDepth = intCmd[2];
-						break;
-					case "x": /* exit */
-						console.debug = _osc.browserDbg;
-						console.log = _osc.browserLog;
-						console.warn = _osc.browserWrn;
-						console.error = _osc.browserErr;
-						document.body.removeChild(_osc.body);
-						break;
-					case "zi":
-						_osc.body.style.zIndex = intCmd[2];
-						break;
-					default:
-						_osc._log("error", ["Unrecognized internal command " + intCmd[1]]);
+						$0._log("error", ["Unrecognized internal command " + intCmd[1]]);
+					}
+					else
+					{
+						$0._cache(intCmd[1], intCmd[2]);
 					};
 				}
 				else
 				{
+					$0._cache("history", $0.history);
 					try
 					{
 						let result = eval(cmd);
 						if (cmd.trim().startsWith("console.") === false)
 						{
-							_osc._log("result", result);
+							$0._log("result", result);
 						};
 					}
 					catch (ex)
@@ -387,25 +407,30 @@ if (/\bconsole=\d\b/i.test(window.location.search))
 						console.error(ex);
 					};
 				};
-				_osc.prompt.value = "";
-				_osc.prompt.focus();
+				$0.prompt.value = "";
+				$0.prompt.focus();
 			};
 		};
-		window.onerror = (msg, url, lineNo, columnNo, error) => _osc._log("error", (error instanceof Error) ? [msg] : [msg, url, lineNo, columnNo]);
+		window.onerror = (msg, url, lineNo, columnNo, error) => $0._log("error", (error instanceof Error) ? [msg] : [msg, url, lineNo, columnNo]);
 		window.addEventListener("load", (event) =>
 		{
-			document.body.appendChild(_osc.body);
+			document.body.appendChild($0.body);
 			let style = document.createElement("style");
 			document.head.insertBefore(style, document.head.firstChild);
-			for (let rules in _osc.styles)
-			{
-				style.sheet.insertRule("#" + _osc.ELEMENT_ID + ((rules.startsWith("#")) ? "" : " ." + rules) + " { " + _osc.styles[rules] + " }");
-			};
+			for (let rules in $0.styles)
+				style.sheet.insertRule("#" + $0.ELEMENT_ID + ((rules.startsWith("#")) ? "" : " ." + rules) + " { " + $0.styles[rules] + " }");
 		}
 		);
-		_osc._log("info", ["Welcome to OnScreenConsole " + _osc.VERSION + "!"]);
-		_osc._log("info", ["Copyright 2021 Christoph Zager"]);
-		_osc._log("info", ["Licensed under the Apache License, Version 2.0"]);
-		_osc._log("info", ["https://github.com/suppenhuhn79/on-screen-console"]);
+		/* restore settings */
+		if (!!localStorage)
+		{
+			let c = JSON.parse(localStorage.getItem($0.ELEMENT_ID)) ?? {};
+			for (let k in c)
+				$0.execIntCmd(k, c[k]);
+			$0.history = c.history ?? [];
+			$0.historyPosition = $0.history.length;
+		};
+		$0._log("info", ["Welcome to OnScreenConsole " + $0.VERSION + "!"]);
+		$0._log("info", ["https://github.com/suppenhuhn79/on-screen-console"]);
 	};
 };

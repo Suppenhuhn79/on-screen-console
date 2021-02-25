@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>on-screen-console Demo Page</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!-- <link rel="stylesheet" href="template.css"/> -->
+		<script src="onscreenconsole.js"></script>
+		<style>
+			code {
+			font-family: monospace;
+			font-size: 0.9em;
+			background-color: #ddd;
+			border-radius: 0.3em;
+			padding: 0.3em;
+			}
+		</style>
+	</head>
+	<body>
+		<div style="margin-top: 40vh;">
+			<h1>Welcome to the on-screen-console live demo!</h1>
+			<p>We have a demo object here that you can inspect. It's called "myObj". Just type <code>myObj</code> in the console input box above.</p>
+		</div>
+		<script>
+		let myObj = {
+			"id": "alpha",
+			"b": 2, 
+			"c": [1,2,3, null, "eof"],
+			"e": {"name": "dummy", "magic": 21, "ar": ["a", { "1": "one"}]},
+			"f": (arg) => console.log(arg)
+		};
+		
+		t = function(a)
+		{
+		window[a]();
+		};
+		
+		</script>
+		<!-- console.debug("abc", 0.5, myObj, new Error("booh"), myObj.c, (myObj.b === 2)); -->
+	</body>
+</html>
