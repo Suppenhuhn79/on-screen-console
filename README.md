@@ -20,9 +20,9 @@ https://suppenhuhn79.github.io/on-screen-console/?console=1
 
 `.clr` clear the on-screen-console output.
 
-`.fs value` set the font size. _value_ is any valid CSS size specification. Default is `0.8rem`.
+`.fs value` set the font size. _value_ is a number or any valid CSS size specification. Default is `0.8rem`. If no unit is given, `rem` is assumed.
 
-`.mh number` set the maximum height of the output area (not the entire console box!) as percentage of the viewport height. It may be any number < 100 (considering the console padding and input box size, it should not be greater than 90). Default is `30`.
+`.mh value` set the maximum height of the output area (not the entire console box!). _value_ is a number or any valid CSS size specification. Default is `30vh`. If no unit is given, `vh` is assumed.
 
 `.od number` (object depth) set the maximum depth of child objects to inspect. With `0` you will be able to only inspect the members of the current object. Default is `2` so you can inspect the current object child und grandchild object. The higher this number, the longer it takes to evaluate objects and the more HTML is generated.
 
