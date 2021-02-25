@@ -18,7 +18,7 @@ https://suppenhuhn79.github.io/on-screen-console/?console=1
 
 ## Inernal commands
 
-`.clr` clear the on-screen-console output.
+`.c` clear the on-screen-console output.
 
 `.fs value` set the font size. _value_ is a number or any valid CSS size specification. Default is `0.8rem`. If no unit is given, `rem` is assumed.
 
