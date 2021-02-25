@@ -46,12 +46,12 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 		$0.browserErr = console.error;
 		$0._cache = (key, val) =>
 		{
-if (!!localStorage)
-					{
-						let c = JSON.parse(localStorage.getItem($0.ELEMENT_ID)) ?? {};
-						c[key] = val
-						localStorage.setItem($0.ELEMENT_ID, JSON.stringify(c));
-					};
+			if (!!localStorage)
+			{
+				let c = JSON.parse(localStorage.getItem($0.ELEMENT_ID)) ?? {};
+				c[key] = val
+					localStorage.setItem($0.ELEMENT_ID, JSON.stringify(c));
+			};
 		};
 		$0._log = (rel, ...vals) =>
 		{
@@ -229,7 +229,7 @@ if (!!localStorage)
 			__styleElement(prefix, "white-space:nowrap;display:inline-block;vertical-align:top;");
 			let content = document.createElement("span");
 			__styleElement(content, "display:inline-block;vertical-align: top;");
-			prefix.innerHTML = ($0.prefixes[rel] !== undefined) ? $0.prefixes[rel] : "&nbsp;";
+			prefix.innerHTML = $0.prefixes[rel] ?? "&nbsp;";
 			prefix.classList.add(rel);
 			switch (rel)
 			{
@@ -378,7 +378,7 @@ if (!!localStorage)
 				keypressEvent.stopPropagation();
 				let cmd = keypressEvent.target.value;
 				let intCmd = /^\.(\w+)(?:\s+(.+))?/.exec(cmd);
-				$0.historyPosition = ($0.history[$0.history.length -1] !== cmd) ? $0.history.push(cmd) : $0.history.length;
+				$0.historyPosition = ($0.history[$0.history.length - 1] !== cmd) ? $0.history.push(cmd) : $0.history.length;
 				$0._log("input", cmd);
 				if (intCmd !== null)
 				{
