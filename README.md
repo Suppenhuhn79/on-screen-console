@@ -2,11 +2,15 @@
 
 This is an onscreen/inpage console/debugger. Using native javascript (ECMAScript 6) it offers **all features** in **one file** and absolutely **zero dependencies!** Great for mobile debugging.
 
+[![ECMAScript6](https://img.shields.io/badge/ECMAScript-6-0066ff)](#)\
+[![Standalone](https://img.shields.io/badge/Standalone-yes-33cc33)](#)\
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+
 It hooks into the default `console` functions, so every `console.log()`, `console.warn()`, `console.error()` and `console.debug()` will be written to both, the browsers build-in console and the on-screen-console.
 
-All JavaScript errors will also be logged into on-screen-console. The amount and value of error-information depends on the browser and error type.
+All JavaScript errors will also be logged into on-screen-console (except for those in promises). The amount and value of error-information depends on the browser and error type.
 
-Unfortunately there is no support for `console.trace()` and `console.group()`/`.groupEnd()` yet. It can also not capture errors in promises yet.
+Unfortunately there is no support for `console.trace()` and `console.group()`/`.groupEnd()` yet.
 
 ## How to use
 
