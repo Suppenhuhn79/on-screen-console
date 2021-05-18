@@ -10,10 +10,9 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 {
 	let $0 =
 	{
-		VERSION: "v1.2",
+		VERSION: "v1.3",
 		ELEMENT_ID: "on-screen-console",
 		logLevel: Number(/\bconsole=(\d)\b/i.exec(window.location.search)[1]),
-		maxDepth: 2,
 		styles:
 		{
 			"#": "background-color:#006;color:#ccc;font-family:monospace;font-size:0.8rem;position:fixed;top:0px;left:0px;width:100%;margin:0rem;padding:0.5rem;box-sizing:border-box;z-index:" + Number.MAX_SAFE_INTEGER + ";",
@@ -55,180 +54,12 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 		};
 		$0._log = (rel, ...vals) =>
 		{
-			function __styleElement(element, style)
-			{
-				if (style !== undefined)
-				{
-					let rex = /(.+?):(.+?);/g;
-					let rem = rex.exec(style);
-					while (rem !== null)
-					{
-						element.style[rem[1].trim()] = rem[2].trim();
-						rem = rex.exec(style);
-					};
-				};
-			};
-			function __escapeHtml(val)
-			{
-				return String(val).replace("<", "&lt;").replace(">", "&gt;");
-			};
-			function __formatSimpleType(val, rel, depth)
-			{
-				let span = document.createElement("span");
-				if (val === null)
-				{
-					span.innerHTML = "null";
-					span.classList.add("internal");
-				}
-				else
-				{
-					switch (typeof val)
-					{
-					case "undefined":
-					case "boolean":
-						span.classList.add("internal");
-						span.innerHTML = val;
-						break;
-					case "string":
-						if (val === "")
-						{
-							val = "&lt;empty string&gt;";
-							span.classList.add("internal");
-						}
-						else
-						{
-							val = val.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-							if (rel === "result")
-							{
-								span.classList.add("string");
-								val = "\"" + val + "\"";
-							};
-						};
-						span.innerHTML = val;
-						break;
-					case "number":
-						span.classList.add("number");
-						span.innerHTML = val;
-						break;
-					case "function":
-						span.classList.add("function");
-						span.innerHTML = "function" + /\(.*?\)/.exec(val.toString())[0].replaceAll(/[\r\n]/g, "");
-						break;
-					case "object":
-						if (depth < $0.maxDepth)
-						{
-							span.appendChild(__formattedValue(val, rel, depth + 1));
-						}
-						else
-						{
-							span.innerHTML = val.constructor.name;
-							span.classList.add("object");
-						};
-						break;
-					default:
-						span.innerHTML = val;
-					};
-				};
-				return span;
-			};
-			function __classMap(obj)
-			{
-				let result = [];
-				switch (obj.constructor.name.toUpperCase())
-				{
-				case "WINDOW":
-					result.push(obj.location);
-					break;
-				case "DATE":
-					result.push(obj.toString());
-					break;
-				};
-				if (obj instanceof HTMLElement)
-				{
-					result.push(__escapeHtml(/<.+?>/.exec(obj.outerHTML)[0]));
-				};
-				return result;
-			};
-			function __formattedValue(val, rel, depth)
-			{
-				let span = document.createElement("span");
-				if (val === null)
-				{
-					span = __formatSimpleType(val, rel);
-				}
-				else
-				{
-					switch (typeof val)
-					{
-					case "object":
-						let titleSpan = document.createElement("span");
-						titleSpan.innerHTML = ((val.constructor === Array) ? "Array(" + val.length + ")" : val.constructor.name) + ((depth <= $0.maxDepth) ? " {&hellip;}" : "");
-						span.appendChild(titleSpan);
-						if (val instanceof Error)
-						{
-							span.classList.add("error");
-							titleSpan.innerHTML = __escapeHtml(val);
-							if (val.stack !== undefined)
-							{
-								let stackSpan = document.createElement("ul");
-								__styleElement(stackSpan, "list-style:none;margin:0rem;padding:0rem;");
-								let li = document.createElement("li");
-								stackSpan.appendChild(li);
-								li.innerHTML = val.stack;
-								span.appendChild(stackSpan);
-							};
-						}
-						else
-						{
-							titleSpan.classList.add("object");
-							if (depth <= $0.maxDepth)
-							{
-								titleSpan.classList.add("expandable");
-							};
-							let ul = document.createElement("ul");
-							__styleElement(ul, "list-style:none;margin:0rem;padding-left:1.4em;display:none;");
-							for (let k of __classMap(val))
-							{
-								let li = document.createElement("li");
-								__styleElement(li, "font-weight:bold;");
-								li.innerHTML = k;
-								ul.appendChild(li);
-							};
-							for (let m in val)
-							{
-								let li = document.createElement("li");
-								let keySpan = document.createElement("span");
-								keySpan.innerHTML = m + ":&nbsp;";
-								li.appendChild(keySpan);
-								try
-								{
-									li.appendChild(__formatSimpleType(val[m], "result", depth));
-								}
-								catch (ex)
-								{
-									let e = __formatSimpleType(val[m], "error", Number.MAX_SAFE_INTEGER);
-									e.style.textDecoration = "line-through";
-									li.appendChild(e);
-								};
-								ul.appendChild(li);
-							};
-							span.appendChild(ul);
-							titleSpan.onclick = $0.toggleUl;
-						};
-						break;
-					default:
-						span = __formatSimpleType(val, rel, depth);
-					};
-				};
-				span.classList.add("ITEM");
-				return span;
-			};
 			let div = document.createElement("div");
-			__styleElement(div, "display:block;");
+			$0.__styleElement(div, "display:block;");
 			let prefix = document.createElement("span");
-			__styleElement(prefix, "white-space:nowrap;display:inline-block;vertical-align:top;");
+			$0.__styleElement(prefix, "white-space:nowrap;display:inline-block;vertical-align:top;");
 			let content = document.createElement("span");
-			__styleElement(content, "display:inline-block;vertical-align: top;");
+			$0.__styleElement(content, "display:inline-block;vertical-align: top;");
 			prefix.innerHTML = $0.prefixes[rel] ?? "&nbsp;";
 			prefix.classList.add(rel);
 			switch (rel)
@@ -237,7 +68,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				content.innerHTML = vals[0];
 				break;
 			case "result":
-				content = __formattedValue(vals[0], rel, 0);
+				content = $0.__formattedValue(vals[0], rel, 0);
 				if (vals[0]instanceof Error)
 				{
 					content.classList.add("error");
@@ -247,7 +78,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				content.classList.add(rel);
 				for (let v = 0, vv = vals[0].length; v < vv; v += 1)
 				{
-					content.appendChild(__formattedValue(vals[0][v], rel, 0));
+					content.appendChild($0.__formattedValue(vals[0][v], rel, 0));
 				};
 			};
 			prefix.innerHTML += "&nbsp;";
@@ -256,11 +87,171 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 			$0.output.appendChild(div);
 			$0.output.scrollTo(0, $0.output.scrollHeight);
 		};
+		$0.__styleElement = (element, style) =>
+		{
+			if (style !== undefined)
+			{
+				let rex = /(.+?):(.+?);/g;
+				let rem = rex.exec(style);
+				while (rem !== null)
+				{
+					element.style[rem[1].trim()] = rem[2].trim();
+					rem = rex.exec(style);
+				};
+			};
+		};
+		$0.__escapeHtml = (val) => String(val).replace("<", "&lt;").replace(">", "&gt;");
+		$0.__formatSimpleType = (val, rel) =>
+		{
+			let span = document.createElement("span");
+			if (val === null)
+			{
+				span.innerHTML = "null";
+				span.classList.add("internal");
+			}
+			else
+			{
+				switch (typeof val)
+				{
+				case "undefined":
+				case "boolean":
+					span.classList.add("internal");
+					span.innerHTML = val;
+					break;
+				case "string":
+					if (val === "")
+					{
+						val = "&lt;empty string&gt;";
+						span.classList.add("internal");
+					}
+					else
+					{
+						val = val.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+						if (rel === "result")
+						{
+							span.classList.add("string");
+							val = "\"" + val + "\"";
+						};
+					};
+					span.innerHTML = val;
+					break;
+				case "number":
+					span.classList.add("number");
+					span.innerHTML = val;
+					break;
+				case "function":
+					span.classList.add("function");
+					span.innerHTML = "function" + /\(.*?\)/.exec(val.toString())[0].replaceAll(/[\r\n]/g, "");
+					break;
+				case "object":
+					span.appendChild($0.__formattedValue(val, rel));
+					break;
+				default:
+					span.innerHTML = val;
+				};
+			};
+			return span;
+		};
+		$0.__classMap = (obj) =>
+		{
+			let result = [];
+			switch (obj.constructor.name.toUpperCase())
+			{
+			case "WINDOW":
+				result.push(obj.location);
+				break;
+			case "DATE":
+				result.push(obj.toString());
+				break;
+			};
+			if (obj instanceof HTMLElement)
+			{
+				result.push($0.__escapeHtml(/<.+?>/.exec(obj.outerHTML)[0]));
+			};
+			return result;
+		};
+		$0.__formattedValue = (val, rel) =>
+		{
+			let span = document.createElement("span");
+			if (val === null)
+			{
+				span = $0.__formatSimpleType(val, rel);
+			}
+			else
+			{
+				switch (typeof val)
+				{
+				case "object":
+					let titleSpan = document.createElement("span");
+					titleSpan.innerHTML = ((val.constructor === Array) ? "Array(" + val.length + ")" : val.constructor.name) + " {&hellip;}";
+					if (val instanceof Error)
+					{
+						span.classList.add("error");
+						titleSpan.innerHTML = $0.__escapeHtml(val);
+						if (val.stack !== undefined)
+						{
+							let stackSpan = document.createElement("ul");
+							$0.__styleElement(stackSpan, "list-style:none;margin:0rem;padding:0rem;");
+							let li = document.createElement("li");
+							stackSpan.appendChild(li);
+							li.innerHTML = val.stack;
+							span.appendChild(stackSpan);
+						};
+					}
+					else
+					{
+						titleSpan.classList.add("object");
+						titleSpan.classList.add("expandable");
+					};
+					titleSpan.onclick = $0.toggleUl;
+					span.appendChild(titleSpan);
+					break;
+				default:
+					span = $0.__formatSimpleType(val, rel);
+				};
+			};
+			span.classList.add("ITEM");
+			span["__object"] = val;
+			return span;
+		};
 		$0.toggleUl = (evt) =>
 		{
-			let ul = evt.target.parentElement.querySelector("ul");
-			if (ul !== null)
+			let obj = evt.target.parentElement.__object;
+			$0.browserLog("toggleUl:", obj);
+			if (!!obj)
 			{
+				let ul = evt.target.parentElement.querySelector("ul");
+				if (ul === null)
+				{
+					ul = document.createElement("ul");
+					$0.__styleElement(ul, "list-style:none;margin:0rem;padding-left:1.4em;display:none;");
+					for (let k of $0.__classMap(obj))
+					{
+						let li = document.createElement("li");
+						$0.__styleElement(li, "font-weight:bold;");
+						li.innerHTML = k;
+						ul.appendChild(li);
+					};
+					for (let m in obj)
+					{
+						let li = document.createElement("li");
+						let keySpan = document.createElement("span");
+						keySpan.innerHTML = m + ":&nbsp;";
+						li.appendChild(keySpan);
+						try
+						{
+							li.appendChild($0.__formattedValue(obj[m], "result"));
+						}
+						catch (ex)
+						{
+							let e = $0.__formatSimpleType(obj[m], "error", Number.MAX_SAFE_INTEGER);
+							e.style.textDecoration = "line-through";
+							li.appendChild(e);
+						};
+						ul.appendChild(li);
+					};
+					evt.target.parentElement.appendChild(ul);
+				};
 				ul.style.display = (ul.style.display === "none") ? "initial" : "none";
 			};
 		};
@@ -319,7 +310,6 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				},
 				"fs": () => $0.body.style.fontSize = sizeArg[1] + (sizeArg[2] ?? "rem"),
 				"mh": () => $0.output.style.maxHeight = sizeArg[1] + (sizeArg[2] ?? "vh"),
-				"d": () => $0.maxDepth = arg,
 				"x": () =>
 				{
 					console.debug = $0.browserDbg;
