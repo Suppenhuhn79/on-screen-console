@@ -55,11 +55,11 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 		$0._log = (rel, ...vals) =>
 		{
 			let div = document.createElement("div");
-			$0.__styleElement(div, "display:block;");
+			$0._styleElement(div, "display:block;");
 			let prefix = document.createElement("span");
-			$0.__styleElement(prefix, "white-space:nowrap;display:inline-block;vertical-align:top;");
+			$0._styleElement(prefix, "white-space:nowrap;display:inline-block;vertical-align:top;");
 			let content = document.createElement("span");
-			$0.__styleElement(content, "display:inline-block;vertical-align: top;");
+			$0._styleElement(content, "display:inline-block;vertical-align: top;");
 			prefix.innerHTML = $0.prefixes[rel] ?? "&nbsp;";
 			prefix.classList.add(rel);
 			switch (rel)
@@ -68,7 +68,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				content.innerHTML = vals[0];
 				break;
 			case "result":
-				content = $0.__formattedValue(vals[0], rel, 0);
+				content = $0._formatValue(vals[0], rel, 0);
 				if (vals[0]instanceof Error)
 				{
 					content.classList.add("error");
@@ -78,7 +78,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				content.classList.add(rel);
 				for (let v = 0, vv = vals[0].length; v < vv; v += 1)
 				{
-					content.appendChild($0.__formattedValue(vals[0][v], rel, 0));
+					content.appendChild($0._formatValue(vals[0][v], rel, 0));
 				};
 			};
 			prefix.innerHTML += "&nbsp;";
@@ -87,7 +87,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 			$0.output.appendChild(div);
 			$0.output.scrollTo(0, $0.output.scrollHeight);
 		};
-		$0.__styleElement = (element, style) =>
+		$0._styleElement = (element, style) =>
 		{
 			if (style !== undefined)
 			{
@@ -100,9 +100,9 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				};
 			};
 		};
-		$0.__escapeHtml = (val) => String(val).replace("<", "&lt;").replace(">", "&gt;");
-		$0.__formatSimpleType = (val, rel) =>
+		$0._formatValue = (val, rel) =>
 		{
+			const __escapeHtml = (val) => String(val).replace("<", "&lt;").replace(">", "&gt;");
 			let span = document.createElement("span");
 			if (val === null)
 			{
@@ -144,54 +144,16 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 					span.innerHTML = "function" + /\(.*?\)/.exec(val.toString())[0].replaceAll(/[\r\n]/g, "");
 					break;
 				case "object":
-					span.appendChild($0.__formattedValue(val, rel));
-					break;
-				default:
-					span.innerHTML = val;
-				};
-			};
-			return span;
-		};
-		$0.__classMap = (obj) =>
-		{
-			let result = [];
-			switch (obj.constructor.name.toUpperCase())
-			{
-			case "WINDOW":
-				result.push(obj.location);
-				break;
-			case "DATE":
-				result.push(obj.toString());
-				break;
-			};
-			if (obj instanceof HTMLElement)
-			{
-				result.push($0.__escapeHtml(/<.+?>/.exec(obj.outerHTML)[0]));
-			};
-			return result;
-		};
-		$0.__formattedValue = (val, rel) =>
-		{
-			let span = document.createElement("span");
-			if (val === null)
-			{
-				span = $0.__formatSimpleType(val, rel);
-			}
-			else
-			{
-				switch (typeof val)
-				{
-				case "object":
 					let titleSpan = document.createElement("span");
 					titleSpan.innerHTML = ((val.constructor === Array) ? "Array(" + val.length + ")" : val.constructor.name) + " {&hellip;}";
 					if (val instanceof Error)
 					{
 						span.classList.add("error");
-						titleSpan.innerHTML = $0.__escapeHtml(val);
+						titleSpan.innerHTML = __escapeHtml(val);
 						if (val.stack !== undefined)
 						{
 							let stackSpan = document.createElement("ul");
-							$0.__styleElement(stackSpan, "list-style:none;margin:0rem;padding:0rem;");
+							$0._styleElement(stackSpan, "list-style:none;margin:0rem;padding:0rem;");
 							let li = document.createElement("li");
 							stackSpan.appendChild(li);
 							li.innerHTML = val.stack;
@@ -202,20 +164,38 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 					{
 						titleSpan.classList.add("object");
 						titleSpan.classList.add("expandable");
+						span["__object"] = val;
 					};
 					titleSpan.onclick = $0.toggleUl;
 					span.appendChild(titleSpan);
 					break;
 				default:
-					span = $0.__formatSimpleType(val, rel);
+					span.innerHTML = __escapeHtml(val);
 				};
 			};
 			span.classList.add("ITEM");
-			span["__object"] = val;
 			return span;
 		};
 		$0.toggleUl = (evt) =>
 		{
+			const __classMap = (obj) =>
+			{
+				let result = [];
+				switch (obj.constructor.name.toUpperCase())
+				{
+				case "WINDOW":
+					result.push(obj.location);
+					break;
+				case "DATE":
+					result.push(obj.toString());
+					break;
+				};
+				if (obj instanceof HTMLElement)
+				{
+					result.push(__escapeHtml(/<.+?>/.exec(obj.outerHTML)[0]));
+				};
+				return result;
+			};
 			let obj = evt.target.parentElement.__object;
 			$0.browserLog("toggleUl:", obj);
 			if (!!obj)
@@ -224,11 +204,11 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				if (ul === null)
 				{
 					ul = document.createElement("ul");
-					$0.__styleElement(ul, "list-style:none;margin:0rem;padding-left:1.4em;display:none;");
-					for (let k of $0.__classMap(obj))
+					$0._styleElement(ul, "list-style:none;margin:0rem;padding-left:1.4em;display:none;");
+					for (let k of __classMap(obj))
 					{
 						let li = document.createElement("li");
-						$0.__styleElement(li, "font-weight:bold;");
+						$0._styleElement(li, "font-weight:bold;");
 						li.innerHTML = k;
 						ul.appendChild(li);
 					};
@@ -240,7 +220,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 						li.appendChild(keySpan);
 						try
 						{
-							li.appendChild($0.__formattedValue(obj[m], "result"));
+							li.appendChild($0._formatValue(obj[m], "result"));
 						}
 						catch (ex)
 						{
