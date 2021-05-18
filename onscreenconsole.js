@@ -8,7 +8,7 @@ See the full license text at http://www.apache.org/licenses/LICENSE-2.0
 
 if (/\bconsole=[1-4]\b/i.test(window.location.search))
 {
-	let $0 =
+	let _ =
 	{
 		VERSION: "v1.3",
 		ELEMENT_ID: "on-screen-console",
@@ -24,7 +24,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 			".error": "color:#f66;",
 			".internal,.boolean,.undefined": "color:#fff;font-style:italic;",
 			".number": "color:#2d2;",
-			".string": "color:#ccc;",
+			".string": "color:inherit;",
 			".object": "color:#3ff;",
 			".object .expandable:hover": "text-decoration:underline;cursor:pointer;",
 			".function": "color:#acf;font-weight:bold;",
@@ -40,68 +40,64 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 			"result": "&lt;"
 		}
 	};
-	if ($0.LOG_LEVEL > 0)
+	if (_.LOG_LEVEL > 0)
 	{
-		$0.browserDbg = console.debug;
-		$0.browserLog = console.log;
-		$0.browserWrn = console.warn;
-		$0.browserErr = console.error;
-		$0.newEle = (eleDef, ...vals) =>
+		_.orgDbg = console.debug;
+		_.orgLog = console.log;
+		_.orgWrn = console.warn;
+		_.orgErr = console.error;
+		_.newEle = (eleDef, ...vals) =>
 		{
-			let result = document.createElement(/^[^#.\s]+/.exec(eleDef)[0]);
+			let res = document.createElement(/^[^#.\s]+/.exec(eleDef)[0]);
 			let cssClassesRex = /\.([^.\s]+)/g,
 			cssClassMatch;
 			while (cssClassMatch = cssClassesRex.exec(eleDef))
-				result.classList.add(cssClassMatch[1]);
+				res.classList.add(cssClassMatch[1]);
 			for (let val of vals)
 			{
 				if (["String", "Number"].includes(val.constructor.name))
-				{
-					result.innerHTML = val;
-				}
+					res.innerHTML = val;
 				else if (val instanceof HTMLElement)
-				{
-					result.appendChild(val);
-				};
+					res.appendChild(val);
 			};
-			return result;
+			return res;
 		};
-		$0._cache = (key, dat) =>
+		_.store = (key, dat) =>
 		{
 			if (!!localStorage)
 			{
-				let c = JSON.parse(localStorage.getItem($0.ELEMENT_ID)) ?? {};
+				let c = JSON.parse(localStorage.getItem(_.ELEMENT_ID)) ?? {};
 				c[key] = dat;
-				localStorage.setItem($0.ELEMENT_ID, JSON.stringify(c));
+				localStorage.setItem(_.ELEMENT_ID, JSON.stringify(c));
 			};
 		};
-		$0.write = (rel, ...vals) =>
+		_.write = (kind, ...vals) =>
 		{
-			let content = $0.newEle("span");
-			switch (rel)
+			let content = _.newEle("span");
+			switch (kind)
 			{
 			case "input":
 				content.innerHTML = vals[0];
 				break;
 			case "result":
-				content = $0._formatValue(vals[0], rel);
+				content = _.formatVal(vals[0], kind);
 				break;
 			default:
-				content.classList.add(rel);
+				content.classList.add(kind);
 				for (let v of vals[0])
-					content.appendChild($0._formatValue(v, rel));
+					content.appendChild(_.formatVal(v, kind));
 			};
-			$0.output.appendChild($0.newEle("div", $0.newEle("span." + rel, ($0.PREFIXES[rel] ?? "&nbsp;") + "&nbsp;"), content));
-			$0.output.scrollTo(0, $0.output.scrollHeight);
+			_.output.appendChild(_.newEle("div", _.newEle("span." + kind, (_.PREFIXES[kind] ?? "&nbsp;") + "&nbsp;"), content));
+			_.output.scrollTo(0, _.output.scrollHeight);
 		};
-		$0._formatValue = (val, rel) =>
+		_.formatVal = (val, kind) =>
 		{
 			const __escapeHtml = (val) => String(val).replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 			const __objEle = (obj) =>
 			{
 				let objConstr = obj.constructor.name;
-				let objEle = $0.newEle("span.expandable", objConstr);
-				objEle.onclick = $0.toggleUl;
+				let objEle = _.newEle("span.expandable", objConstr);
+				objEle.onclick = _.toggleUl;
 				objEle["__object"] = obj;
 				let objDesc = null;
 				switch (objConstr.toLowerCase())
@@ -117,12 +113,10 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 					break;
 				};
 				if (obj instanceof Element)
-				{
 					objDesc = __escapeHtml(/<.+?>/.exec(obj.outerHTML)[0]);
-				};
-				return (!!objDesc) ? $0.newEle("span", objEle, $0.newEle("span.objdesc", "&#32;" + objDesc)) : objEle;
+				return (!!objDesc) ? _.newEle("span", objEle, _.newEle("span.objdesc", "&#32;" + objDesc)) : objEle;
 			};
-			let span = $0.newEle("span");
+			let span = _.newEle("span");
 			if (val === null)
 			{
 				span.innerHTML = "null";
@@ -143,9 +137,9 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 						val = "&lt;empty string&gt;";
 						span.classList.add("internal");
 					}
-					else if (rel === "result")
+					else if (kind === "result")
 					{
-						val = "\"" + val + "\"";
+						val = "\"" + val.replaceAll("\"", "\\\"") + "\"";
 					};
 					span.innerHTML = __escapeHtml(val);
 					break;
@@ -158,11 +152,9 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				case "object":
 					if (val instanceof Error)
 					{
-						span.appendChild($0.newEle("span.error", __escapeHtml(val)));
+						span.appendChild(_.newEle("span.error", __escapeHtml(val)));
 						if (!!val.stack)
-						{
-							span.appendChild($0.newEle("ul", $0.newEle("li.error", val.stack)));
-						};
+							span.appendChild(_.newEle("ul", _.newEle("li.error", val.stack)));
 					}
 					else
 					{
@@ -176,7 +168,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 			span.classList.add("ITEM");
 			return span;
 		};
-		$0.toggleUl = (evt) =>
+		_.toggleUl = (evt) =>
 		{
 			let obj = evt.target.__object;
 			if (!!obj)
@@ -184,17 +176,17 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				let ul = evt.target.parentElement.querySelector("ul");
 				if (ul === null)
 				{
-					ul = $0.newEle("ul");
+					ul = _.newEle("ul");
 					for (let mem in obj)
 					{
-						let li = $0.newEle("li", $0.newEle("span", mem + ":&nbsp;"));
+						let li = _.newEle("li", _.newEle("span", mem + ":&nbsp;"));
 						try
 						{
-							li.appendChild($0._formatValue(obj[mem], "result"));
+							li.appendChild(_.formatVal(obj[mem], "result"));
 						}
 						catch (ex)
 						{
-							let e = $0._formatValue(obj[mem], "error");
+							let e = _.formatVal(obj[mem], "error");
 							e.style.textDecoration = "line-through";
 							li.appendChild(e);
 						};
@@ -205,167 +197,150 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				ul.style.display = (ul.style.display !== "initial") ? "initial" : "none";
 			};
 		};
-		/* hijack browser default console functionions */
-		console.error = (...vals) =>
+		console.error = (...vals) => /* hijack browser default console functionions */
 		{
-			$0.browserErr.apply(this, vals);
-			$0.write("error", vals);
+			_.orgErr.apply(this, vals);
+			_.write("error", vals);
 		};
-		if ($0.LOG_LEVEL <= 3)
+		if (_.LOG_LEVEL <= 3)
 		{
 			console.warn = (...vals) =>
 			{
-				$0.browserWrn.apply(this, vals);
-				$0.write("warn", vals);
+				_.orgWrn.apply(this, vals);
+				_.write("warn", vals);
 			};
-			if ($0.LOG_LEVEL <= 2)
+			if (_.LOG_LEVEL <= 2)
 			{
 				console.log = (...vals) =>
 				{
-					$0.browserLog.apply(this, vals);
-					$0.write("info", vals);
+					_.orgLog.apply(this, vals);
+					_.write("info", vals);
 				};
-				if ($0.LOG_LEVEL = 1)
+				if (_.LOG_LEVEL = 1)
 				{
 					console.debug = (...vals) =>
 					{
-						$0.browserDbg.apply(this, vals);
-						$0.write("debug", vals);
+						_.orgDbg.apply(this, vals);
+						_.write("debug", vals);
 					};
 				};
 			};
 		};
 		/* init */
-		$0.output = $0.newEle("div.output");
-		$0.prompt = $0.newEle("input");
-		$0.prompt.setAttribute("spellcheck", "false");
-		$0.body = $0.newEle("div.body", $0.output, $0.prompt);
-		$0.body.id = $0.ELEMENT_ID;
-		$0.history = [];
-		$0.historyPosition = 0;
-		$0.execIntCmd = (cmd, arg) =>
+		_.output = _.newEle("div.output");
+		_.prompt = _.newEle("input");
+		_.prompt.setAttribute("spellcheck", "false");
+		_.body = _.newEle("div.body", _.output, _.prompt);
+		_.body.id = _.ELEMENT_ID;
+		_.history = [];
+		_.historyPosition = 0;
+		_.execIntCmd = (cmd, arg) =>
 		{
 			let sizeArg = /([\d\.]+)(\w*)?/.exec(arg);
 			let cmds =
 			{
 				"c": () =>
 				{
-					while (!!$0.output.firstElementChild)
-						$0.output.firstElementChild.remove();
+					while (!!_.output.firstElementChild)
+						_.output.firstElementChild.remove();
 				},
-				"fs": () => $0.body.style.fontSize = sizeArg[1] + (sizeArg[2] ?? "rem"),
-				"mh": () => $0.output.style.maxHeight = sizeArg[1] + (sizeArg[2] ?? "vh"),
+				"fs": () => _.body.style.fontSize = sizeArg[1] + (sizeArg[2] ?? "rem"),
+				"mh": () => _.output.style.maxHeight = sizeArg[1] + (sizeArg[2] ?? "vh"),
 				"x": () =>
 				{
-					console.debug = $0.browserDbg;
-					console.log = $0.browserLog;
-					console.warn = $0.browserWrn;
-					console.error = $0.browserErr;
-					document.body.removeChild($0.body);
+					console.debug = _.orgDbg;
+					console.log = _.orgLog;
+					console.warn = _.orgWrn;
+					console.error = _.orgErr;
+					document.body.removeChild(_.body);
 				},
-				"zi": () => $0.body.style.zIndex = arg
+				"zi": () => _.body.style.zIndex = arg
 			};
 			return (!!cmds[cmd]) ? (cmds[cmd]() ?? true) : false;
 		};
-		$0.prompt.onkeydown = (keypressEvent) =>
+		_.prompt.onkeydown = (keyEvt) =>
 		{
-			switch (keypressEvent.keyCode)
+			switch (keyEvt.keyCode)
 			{
 			case 33: /* pg up */
-				$0.output.scrollBy(0, 0 - ($0.output.clientHeight - 10));
+				_.output.scrollBy(0, 0 - (_.output.clientHeight - 10));
 				break;
 			case 34: /* pg dn*/
-				$0.output.scrollBy(0, ($0.output.clientHeight - 10));
+				_.output.scrollBy(0, (_.output.clientHeight - 10));
 				break;
 			case 38: /* up */
-				if ($0.historyPosition > 0)
+				if (_.historyPosition > 0)
 				{
-					$0.historyPosition -= 1;
-					$0.prompt.value = $0.history[$0.historyPosition];
-					setTimeout(() =>
-					{
-						let inputLength = $0.prompt.value.length;
-						$0.prompt.selectionStart = inputLength;
-						$0.prompt.selectionEnd = inputLength;
-					}, 1);
+					_.historyPosition -= 1;
+					_.prompt.value = _.history[_.historyPosition];
+					setTimeout(() => _.prompt.selectionStart = _.prompt.selectionEnd = _.prompt.value.length, 1);
 				};
 				break;
 			case 40: /* dn */
-				if ($0.historyPosition < $0.history.length)
+				if (_.historyPosition < _.history.length)
 				{
-					$0.historyPosition += 1;
-					if ($0.historyPosition === $0.history.length)
-					{
-						$0.prompt.value = "";
-					}
+					_.historyPosition += 1;
+					if (_.historyPosition === _.history.length)
+						_.prompt.value = "";
 					else
-					{
-						$0.prompt.value = $0.history[$0.historyPosition];
-					};
+						_.prompt.value = _.history[_.historyPosition];
 				};
 				break;
 			};
 		};
-		$0.prompt.onkeypress = (keypressEvent) =>
+		_.prompt.onkeypress = (keyEvt) =>
 		{
-			if (keypressEvent.keyCode === 13)
+			if (keyEvt.keyCode === 13)
 			{
-				keypressEvent.stopPropagation();
-				let cmd = keypressEvent.target.value;
+				keyEvt.stopPropagation();
+				let cmd = keyEvt.target.value;
 				let intCmd = /^\.(\w+)(?:\s+(.+))?/.exec(cmd);
-				$0.historyPosition = ($0.history[$0.history.length - 1] !== cmd) ? $0.history.push(cmd) : $0.history.length;
-				$0.write("input", cmd);
+				_.historyPosition = (_.history[_.history.length - 1] !== cmd) ? _.history.push(cmd) : _.history.length;
+				_.write("input", cmd);
 				if (intCmd !== null)
 				{
-					if ($0.execIntCmd(intCmd[1], intCmd[2]) === false)
-					{
-						$0.write("error", ["Unrecognized internal command " + intCmd[1]]);
-					}
+					if (_.execIntCmd(intCmd[1], intCmd[2]) === false)
+						_.write("error", ["Unrecognized internal command " + intCmd[1]]);
 					else
-					{
-						$0._cache(intCmd[1], intCmd[2]);
-					};
+						_.store(intCmd[1], intCmd[2]);
 				}
 				else
 				{
-					$0._cache("history", $0.history);
+					_.store("history", _.history);
 					try
 					{
-						let result = eval(cmd);
+						let res = eval(cmd);
 						if (cmd.trim().startsWith("console.") === false)
-						{
-							$0.write("result", result);
-						};
+							_.write("result", res);
 					}
 					catch (ex)
 					{
 						console.error(ex);
 					};
 				};
-				$0.prompt.value = "";
-				$0.prompt.focus();
+				_.prompt.value = "";
+				_.prompt.focus();
 			};
 		};
-		window.onerror = (msg, url, lineNo, columnNo, error) => $0.write("error", (error instanceof Error) ? [msg] : [msg, url, lineNo, columnNo]);
+		window.onerror = (msg, url, lineNo, columnNo, error) => _.write("error", (error instanceof Error) ? [msg] : [msg, url, lineNo, columnNo]);
 		window.addEventListener("load", (event) =>
 		{
-			document.body.appendChild($0.body);
-			let style = $0.newEle("style");
+			document.body.appendChild(_.body);
+			let style = _.newEle("style");
 			document.head.insertBefore(style, document.head.firstChild);
-			for (let rules in $0.STYLES)
-				style.sheet.insertRule("#" + $0.ELEMENT_ID + " " + rules + " { " + $0.STYLES[rules] + " }");
+			for (let rules in _.STYLES)
+				style.sheet.insertRule("#" + _.ELEMENT_ID + " " + rules + " { " + _.STYLES[rules] + " }");
 		}
 		);
-		/* restore settings */
-		if (!!localStorage)
+		if (!!localStorage) /* restore settings */
 		{
-			let c = JSON.parse(localStorage.getItem($0.ELEMENT_ID)) ?? {};
+			let c = JSON.parse(localStorage.getItem(_.ELEMENT_ID)) ?? {};
 			for (let k in c)
-				$0.execIntCmd(k, c[k]);
-			$0.history = c.history ?? [];
-			$0.historyPosition = $0.history.length;
+				_.execIntCmd(k, c[k]);
+			_.history = c.history ?? [];
+			_.historyPosition = _.history.length;
 		};
-		$0.write("info", ["Welcome to OnScreenConsole " + $0.VERSION + "!"]);
-		$0.write("info", ["https://github.com/suppenhuhn79/on-screen-console"]);
+		_.write("info", ["Welcome to OnScreenConsole " + _.VERSION + "!"]);
+		_.write("info", ["https://github.com/suppenhuhn79/on-screen-console"]);
 	};
 };
