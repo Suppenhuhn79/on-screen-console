@@ -15,19 +15,20 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 		logLevel: Number(/\bconsole=(\d)\b/i.exec(window.location.search)[1]),
 		styles:
 		{
-			"#": "background-color:#006;color:#ccc;font-family:monospace;font-size:0.8rem;position:fixed;top:0px;left:0px;width:100%;margin:0rem;padding:0.5rem;box-sizing:border-box;z-index:" + Number.MAX_SAFE_INTEGER + ";",
-			"prompt": "background-color:inherit;color:inherit;font-family:inherit;font-size:inherit;width:100%;border:1px solid #666;outline:none;",
-			"output": "white-space:pre;padding:0rem;margin:0rem;max-height:30vh;overflow:scroll;",
-			"warn": "color:#dd6;",
-			"error": "color:#f66;",
-			"internal": "color:#fff;font-style:italic;",
-			"number": "color:#2d2;",
-			"string": "",
-			"object": "color:#3ff;",
-			"object.expandable:hover": "text-decoration:underline;cursor:pointer;",
-			"function": "color:#acf;font-weight:bold;",
-			"ITEM": "display:inline-block;vertical-align:top;margin-right:0.7em;",
-			"ITEM:hover": "background-color:#337;"
+			"": "background-color:#006;color:#ccc;font-family:monospace;font-size:0.8rem;position:fixed;top:0px;left:0px;width:100%;margin:0rem;padding:0.5rem;box-sizing:border-box;z-index:" + Number.MAX_SAFE_INTEGER + ";",
+			"li": "color:#ccc;",
+			".prompt": "background-color:inherit;color:inherit;font-family:inherit;font-size:inherit;width:100%;border:1px solid #666;outline:none;",
+			".output": "white-space:pre;padding:0rem;margin:0rem;max-height:30vh;overflow:scroll;",
+			".warn": "color:#dd6;",
+			".error": "color:#f66;",
+			".internal,.boolean,.undefined": "color:#fff;font-style:italic;",
+			".number": "color:#2d2;",
+			".string": "color:#ccc;",
+			".object": "color:#3ff;",
+			".object .expandable:hover": "text-decoration:underline;cursor:pointer;",
+			".function": "color:#acf;font-weight:bold;",
+			".ITEM": "display:inline-block;vertical-align:top;margin-right:0.7em;",
+			".ITEM:hover": "background-color:#448;"
 		},
 		prefixes:
 		{
@@ -111,11 +112,11 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 			}
 			else
 			{
+				span.classList.add(typeof val);
 				switch (typeof val)
 				{
 				case "undefined":
 				case "boolean":
-					span.classList.add("internal");
 					span.innerHTML = val;
 					break;
 				case "string":
@@ -126,21 +127,17 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 					}
 					else
 					{
-						val = val.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 						if (rel === "result")
 						{
-							span.classList.add("string");
 							val = "\"" + val + "\"";
 						};
 					};
-					span.innerHTML = val;
+					span.innerHTML = __escapeHtml(val);
 					break;
 				case "number":
-					span.classList.add("number");
 					span.innerHTML = val;
 					break;
 				case "function":
-					span.classList.add("function");
 					span.innerHTML = "function" + /\(.*?\)/.exec(val.toString())[0].replaceAll(/[\r\n]/g, "");
 					break;
 				case "object":
@@ -154,7 +151,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 						{
 							let stackSpan = document.createElement("ul");
 							$0._styleElement(stackSpan, "list-style:none;margin:0rem;padding:0rem;");
-							let li = document.createElement("li");
+							let li = document.createElement("li.error");
 							stackSpan.appendChild(li);
 							li.innerHTML = val.stack;
 							span.appendChild(stackSpan);
@@ -162,8 +159,8 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 					}
 					else
 					{
-						titleSpan.classList.add("object");
 						titleSpan.classList.add("expandable");
+						$0.browserLog(titleSpan, titleSpan.classList);
 						span["__object"] = val;
 					};
 					titleSpan.onclick = $0.toggleUl;
@@ -388,7 +385,9 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 			let style = document.createElement("style");
 			document.head.insertBefore(style, document.head.firstChild);
 			for (let rules in $0.styles)
-				style.sheet.insertRule("#" + $0.ELEMENT_ID + ((rules.startsWith("#")) ? "" : " ." + rules) + " { " + $0.styles[rules] + " }");
+			{
+				style.sheet.insertRule("#" + $0.ELEMENT_ID + " " + rules + " { " + $0.styles[rules] + " }");
+			};
 		}
 		);
 		/* restore settings */
