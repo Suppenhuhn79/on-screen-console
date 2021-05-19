@@ -36,6 +36,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 		{
 			"error": "!",
 			"warn": "!",
+			"info": "i",
 			"input": "&gt;",
 			"result": "&lt;"
 		}
@@ -44,6 +45,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 	{
 		_.orgDbg = console.debug;
 		_.orgLog = console.log;
+		_.orgInf = console.info;
 		_.orgWrn = console.warn;
 		_.orgErr = console.error;
 		_.newEle = (eleDef, ...vals) =>
@@ -214,6 +216,11 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				console.log = (...vals) =>
 				{
 					_.orgLog.apply(this, vals);
+					_.write("log", vals);
+				};
+				console.info = (...vals) =>
+				{
+					_.orgInf.apply(this, vals);
 					_.write("info", vals);
 				};
 				if (_.LOG_LEVEL = 1)
@@ -250,6 +257,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				{
 					console.debug = _.orgDbg;
 					console.log = _.orgLog;
+					console.info = _.orgInf;
 					console.warn = _.orgWrn;
 					console.error = _.orgErr;
 					document.body.removeChild(_.body);
@@ -340,7 +348,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 			_.history = c.history ?? [];
 			_.historyPosition = _.history.length;
 		};
-		_.write("info", ["Welcome to OnScreenConsole " + _.VERSION + "!"]);
-		_.write("info", ["https://github.com/suppenhuhn79/on-screen-console"]);
+		_.write("log", ["Welcome to OnScreenConsole " + _.VERSION + "!"]);
+		_.write("log", ["https://github.com/suppenhuhn79/on-screen-console"]);
 	};
 };
