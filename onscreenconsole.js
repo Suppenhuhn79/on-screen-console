@@ -1,19 +1,16 @@
-"use strict";
-
 /*
 OnScreenConsole (https://github.com/suppenhuhn79/on-screen-console)
 Copyright 2021 Christoph Zager, licensed under the Apache License, Version 2.0
 See the full license text at http://www.apache.org/licenses/LICENSE-2.0
  */
-
 if (/\bconsole=[1-4]\b/i.test(window.location.search))
 {
 	let _ =
 	{
 		VERSION: "v1.3",
-		ELEMENT_ID: "on-screen-console",
+		ID: "on-screen-console",
 		LOG_LEVEL: Number(/\bconsole=(\d)\b/i.exec(window.location.search)[1]),
-		STYLES:
+		CSS:
 		{
 			"": "background-color:#006;color:#ccc;font-family:monospace;font-size:0.8rem;position:fixed;top:0px;left:0px;width:100%;margin:0rem;padding:0.5rem;box-sizing:border-box;z-index:" + Number.MAX_SAFE_INTEGER + ";",
 			"ul": "list-style:none;margin:0rem;padding:0rem;",
@@ -28,8 +25,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 			".object": "color:#3ff;",
 			".object .expandable:hover": "text-decoration:underline;cursor:pointer;",
 			".function": "color:#acf;font-weight:bold;",
-			".ITEM": "display:inline-block;vertical-align:top;margin-right:0.7em;",
-			".ITEM:hover": "background-color:#448;",
+			".itm": "display:inline-block;vertical-align:top;margin-right:0.7em;",
 			".objdesc": "color:#999;"
 		},
 		PREFIXES:
@@ -48,7 +44,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 		_.orgInf = console.info;
 		_.orgWrn = console.warn;
 		_.orgErr = console.error;
-		_.newEle = (eleDef, ...vals) =>
+		_.ne = (eleDef, ...vals) =>
 		{
 			let res = document.createElement(/^[^#.\s]+/.exec(eleDef)[0]);
 			let cssClassesRex = /\.([^.\s]+)/g,
@@ -68,14 +64,14 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 		{
 			if (!!localStorage)
 			{
-				let c = JSON.parse(localStorage.getItem(_.ELEMENT_ID)) ?? {};
+				let c = JSON.parse(localStorage.getItem(_.ID)) ?? {};
 				c[key] = dat;
-				localStorage.setItem(_.ELEMENT_ID, JSON.stringify(c));
+				localStorage.setItem(_.ID, JSON.stringify(c));
 			};
 		};
 		_.write = (kind, ...vals) =>
 		{
-			let content = _.newEle("span");
+			let content = _.ne("span.lin");
 			switch (kind)
 			{
 			case "input":
@@ -89,18 +85,19 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				for (let v of vals[0])
 					content.appendChild(_.formatVal(v, kind));
 			};
-			_.output.appendChild(_.newEle("div", _.newEle("span." + kind, (_.PREFIXES[kind] ?? "&nbsp;") + "&nbsp;"), content));
+			_.output.appendChild(_.ne("div", _.ne("span." + kind, (_.PREFIXES[kind] ?? "&nbsp;") + "&nbsp;"), content));
 			_.output.scrollTo(0, _.output.scrollHeight);
 		};
 		_.formatVal = (val, kind) =>
 		{
 			const __escapeHtml = (val) => String(val).replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-			const __objEle = (obj) =>
+			const __objOut = (obj, ele) =>
 			{
 				let objConstr = obj.constructor.name;
-				let objEle = _.newEle("span.expandable", objConstr);
-				objEle.onclick = _.toggleUl;
-				objEle["__object"] = obj;
+				let objNam = _.ne("span.expandable", objConstr);
+				objNam.onclick = _.toggleUl;
+				objNam["__object"] = obj;
+				ele.appendChild(objNam);
 				let objDesc = null;
 				switch (objConstr.toLowerCase())
 				{
@@ -116,9 +113,11 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				};
 				if (obj instanceof Element)
 					objDesc = __escapeHtml(/<.+?>/.exec(obj.outerHTML)[0]);
-				return (!!objDesc) ? _.newEle("span", objEle, _.newEle("span.objdesc", "&#32;" + objDesc)) : objEle;
+				if (!!objDesc)
+					ele.appendChild(_.ne("span.objdesc", "&#32;" + objDesc));
+				return ele;
 			};
-			let span = _.newEle("span");
+			let span = _.ne("span");
 			if (val === null)
 			{
 				span.innerHTML = "null";
@@ -154,20 +153,20 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				case "object":
 					if (val instanceof Error)
 					{
-						span.appendChild(_.newEle("span.error", __escapeHtml(val)));
+						span.appendChild(_.ne("span.error", __escapeHtml(val)));
 						if (!!val.stack)
-							span.appendChild(_.newEle("ul", _.newEle("li.error", val.stack)));
+							span.appendChild(_.ne("ul", _.ne("li.error", val.stack)));
 					}
 					else
 					{
-						span.appendChild(__objEle(val));
+						__objOut(val, span);
 					};
 					break;
 				default:
 					span.innerHTML = __escapeHtml(val);
 				};
 			};
-			span.classList.add("ITEM");
+			span.classList.add("itm");
 			return span;
 		};
 		_.toggleUl = (evt) =>
@@ -178,10 +177,10 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				let ul = evt.target.parentElement.querySelector("ul");
 				if (ul === null)
 				{
-					ul = _.newEle("ul");
+					ul = _.ne("ul");
 					for (let mem in obj)
 					{
-						let li = _.newEle("li", _.newEle("span", mem + ":&nbsp;"));
+						let li = _.ne("li", _.ne("span", mem + ":&nbsp;"));
 						try
 						{
 							li.appendChild(_.formatVal(obj[mem], "result"));
@@ -199,7 +198,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				ul.style.display = (ul.style.display !== "initial") ? "initial" : "none";
 			};
 		};
-		console.error = (...vals) => /* hijack browser default console functionions */
+		console.error = (...vals) =>
 		{
 			_.orgErr.apply(this, vals);
 			_.write("error", vals);
@@ -233,14 +232,13 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				};
 			};
 		};
-		/* init */
-		_.output = _.newEle("div.output");
-		_.prompt = _.newEle("input");
+		_.output = _.ne("div.output");
+		_.prompt = _.ne("input");
 		_.prompt.setAttribute("spellcheck", "false");
-		_.body = _.newEle("div.body", _.output, _.prompt);
-		_.body.id = _.ELEMENT_ID;
-		_.history = [];
-		_.historyPosition = 0;
+		_.body = _.ne("div.body", _.output, _.prompt);
+		_.body.id = _.ID;
+		_.hist = [];
+		_.histPos = 0;
 		_.execIntCmd = (cmd, arg) =>
 		{
 			let sizeArg = /([\d\.]+)(\w*)?/.exec(arg);
@@ -266,44 +264,44 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 			};
 			return (!!cmds[cmd]) ? (cmds[cmd]() ?? true) : false;
 		};
-		_.prompt.onkeydown = (keyEvt) =>
+		_.prompt.onkeydown = (evt) =>
 		{
-			switch (keyEvt.keyCode)
+			switch (evt.keyCode)
 			{
-			case 33: /* pg up */
+			case 33:
 				_.output.scrollBy(0, 0 - (_.output.clientHeight - 10));
 				break;
-			case 34: /* pg dn*/
+			case 34:
 				_.output.scrollBy(0, (_.output.clientHeight - 10));
 				break;
-			case 38: /* up */
-				if (_.historyPosition > 0)
+			case 38:
+				if (_.histPos > 0)
 				{
-					_.historyPosition -= 1;
-					_.prompt.value = _.history[_.historyPosition];
+					_.histPos -= 1;
+					_.prompt.value = _.hist[_.histPos];
 					setTimeout(() => _.prompt.selectionStart = _.prompt.selectionEnd = _.prompt.value.length, 1);
 				};
 				break;
-			case 40: /* dn */
-				if (_.historyPosition < _.history.length)
+			case 40:
+				if (_.histPos < _.hist.length)
 				{
-					_.historyPosition += 1;
-					if (_.historyPosition === _.history.length)
+					_.histPos += 1;
+					if (_.histPos === _.hist.length)
 						_.prompt.value = "";
 					else
-						_.prompt.value = _.history[_.historyPosition];
+						_.prompt.value = _.hist[_.histPos];
 				};
 				break;
 			};
 		};
-		_.prompt.onkeypress = (keyEvt) =>
+		_.prompt.onkeypress = (evt) =>
 		{
-			if (keyEvt.keyCode === 13)
+			if (evt.keyCode === 13)
 			{
-				keyEvt.stopPropagation();
-				let cmd = keyEvt.target.value;
+				evt.stopPropagation();
+				let cmd = evt.target.value;
 				let intCmd = /^\.(\w+)(?:\s+(.+))?/.exec(cmd);
-				_.historyPosition = (_.history[_.history.length - 1] !== cmd) ? _.history.push(cmd) : _.history.length;
+				_.histPos = (_.hist[_.hist.length - 1] !== cmd) ? _.hist.push(cmd) : _.hist.length;
 				_.write("input", cmd);
 				if (intCmd !== null)
 				{
@@ -314,7 +312,7 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 				}
 				else
 				{
-					_.store("history", _.history);
+					_.store("history", _.hist);
 					try
 					{
 						let res = eval(cmd);
@@ -334,19 +332,19 @@ if (/\bconsole=[1-4]\b/i.test(window.location.search))
 		window.addEventListener("load", (event) =>
 		{
 			document.body.appendChild(_.body);
-			let style = _.newEle("style");
+			let style = _.ne("style");
 			document.head.insertBefore(style, document.head.firstChild);
-			for (let rules in _.STYLES)
-				style.sheet.insertRule("#" + _.ELEMENT_ID + " " + rules + " { " + _.STYLES[rules] + " }");
+			for (let rule in _.CSS)
+				style.sheet.insertRule("#" + _.ID + " " + rule + " { " + _.CSS[rule] + " }");
 		}
 		);
-		if (!!localStorage) /* restore settings */
+		if (!!localStorage)
 		{
-			let c = JSON.parse(localStorage.getItem(_.ELEMENT_ID)) ?? {};
+			let c = JSON.parse(localStorage.getItem(_.ID)) ?? {};
 			for (let k in c)
 				_.execIntCmd(k, c[k]);
-			_.history = c.history ?? [];
-			_.historyPosition = _.history.length;
+			_.hist = c.hist ?? [];
+			_.histPos = _.hist.length;
 		};
 		_.write("log", ["Welcome to OnScreenConsole " + _.VERSION + "!"]);
 		_.write("log", ["https://github.com/suppenhuhn79/on-screen-console"]);
