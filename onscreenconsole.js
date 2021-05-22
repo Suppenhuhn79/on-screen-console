@@ -16,7 +16,8 @@ ele.appendChild(val);return ele;};_.output=_.mk("div.output");_.prompt=_.mk("inp
 {_.histPos+=1;if(_.histPos===_.hist.length)
 _.prompt.value="";else
 _.prompt.value=_.hist[_.histPos];};break;};};_.prompt.onkeypress=(evt)=>{if(evt.keyCode===13)
-{evt.stopPropagation();let cmd=evt.target.value;let intCmd=/^\.(\w+)(?:\s+(.+))?/.exec(cmd);_.histPos=(_.hist[_.hist.length-1]!==cmd)?_.hist.push(cmd):_.hist.length;_.write("input",cmd);if(intCmd!==null)
+{evt.stopPropagation();let cmd=evt.target.value;if(cmd.trim()!=="")
+{let intCmd=/^\.(\w+)(?:\s+(.+))?/.exec(cmd);_.histPos=(_.hist[_.hist.length-1]!==cmd)?_.hist.push(cmd):_.hist.length;_.write("input",cmd);if(intCmd!==null)
 {if(_.execIntCmd(intCmd[1],intCmd[2])===false)
 _.write("error",["Unrecognized internal command "+intCmd[1]]);else
 _.store(intCmd[1],intCmd[2]);_.refresh();}
@@ -25,7 +26,7 @@ else
 {let res=eval(cmd);if(cmd.trim().startsWith("console.")===false)
 _.write("result",res);}
 catch(ex)
-{console.error(ex);};};_.prompt.value="";_.prompt.focus();};};_.body=_.mk("div.body",_.output,_.prompt);_.body.id=_.ID;_.store=(key,dat)=>{if(!!localStorage)
+{console.error(ex);};};};_.prompt.value="";_.prompt.focus();};};_.body=_.mk("div.body",_.output,_.prompt);_.body.id=_.ID;_.store=(key,dat)=>{if(!!localStorage)
 {let c=JSON.parse(localStorage.getItem(_.ID))??{};c[key]=dat;localStorage.setItem(_.ID,JSON.stringify(c));};};_.write=(kind,...vals)=>{let content=_.mk("div");switch(kind)
 {case"input":content.innerText=vals[0];break;case"result":content.appendChild(_.formatVal(vals[0],kind));break;default:for(let v of vals[0])
 content.appendChild(_.formatVal(v,kind));};_.output.appendChild(_.mk("div."+kind,_.mk("div",(_.PREFIXES[kind]??"\u0020")),content));_.refresh();_.output.scrollTo(0,_.output.scrollHeight);};_.formatVal=(val,kind)=>{const __objOut=(obj,ele)=>{let objConstr=obj.constructor.name;let objNam=_.mk("span.expandable","{"+objConstr+"}");objNam.onclick=_.toggleUl;objNam["__object"]=obj;ele.appendChild(objNam);let objDesc;switch(objConstr.toLowerCase())
