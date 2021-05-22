@@ -14,13 +14,21 @@ Unfortunately there is no support for `console.trace()` and `console.group()`/`.
 
 ## How to use
 
-Just add `<script src="onscreenconsole.js"></script>` to your HTML file (preferably at the very top of your `<script>`-elements) and then add `console=n` as search parameter to the url (where `n` sets the log level: `1`=debug+info+warn+error, `2`=info+warn+error, `3`=warn+error, `4`=error only).
+Just add the script to your HTML file (preferably at the very top of your `<script>`-elements)
+
+```html
+<script src="onscreenconsole.js"></script>
+```
+
+and then add `console=n` as search parameter to the url (where `n` sets the log level: `1`=debug+info+warn+error, `2`=info+warn+error, `3`=warn+error, `4`=error only).
 
 Take a look at the live demo:
 
 https://suppenhuhn79.github.io/on-screen-console/?console=1
 
 ## Inernal commands
+
+`.ah value` auto hide on-screen-console. _value_ is either `1` (auto hide on) or `0` (auto hide off = console stays fully expanded). Default is `1`.
 
 `.c` clear the on-screen-console output.
 
