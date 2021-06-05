@@ -10,13 +10,13 @@ ele.setAttribute(attrRm[1],attrRm[2]);let classRex=/\.([^.\s]+)/g,classRm;while(
 ele.classList.add(classRm[1]);for(let val of vals)
 if(["string","number"].includes(typeof val))
 ele.innerText=val;else if(val instanceof HTMLElement)
-ele.appendChild(val);return ele;};_.output=_.mk(".output");_.actout=_.output;_.prompt=_.mk("input[spellcheck='false'][autocorrect='off'][autocapitalize='none'][placeholder='>>']");_.prompt.onkeydown=(evt)=>{switch(evt.keyCode)
+ele.appendChild(val);return ele;};_.output=_.mk(".output");_.aout=_.output;_.prompt=_.mk("input[spellcheck='false'][autocorrect='off'][autocapitalize='none'][placeholder='>>']");_.prompt.onkeydown=(e)=>{switch(e.keyCode)
 {case 33:_.output.scrollBy(0,0-(_.output.clientHeight-10));break;case 34:_.output.scrollBy(0,(_.output.clientHeight-10));break;case 38:if(_.histPos>0)
 {_.histPos-=1;_.prompt.value=_.hist[_.histPos];setTimeout(()=>_.prompt.selectionStart=_.prompt.selectionEnd=_.prompt.value.length,1);};break;case 40:if(_.histPos<_.hist.length)
 {_.histPos+=1;if(_.histPos===_.hist.length)
 _.prompt.value="";else
-_.prompt.value=_.hist[_.histPos];};break;};};_.prompt.onkeypress=(evt)=>{if(evt.keyCode===13)
-{evt.stopPropagation();let cmd=evt.target.value;if(cmd.trim()!=="")
+_.prompt.value=_.hist[_.histPos];};break;};};_.prompt.onkeypress=(e)=>{if(e.keyCode===13)
+{e.stopPropagation();let cmd=e.target.value;if(cmd.trim()!=="")
 {let intCmd=/^\.(\w+)(?:\s+(.+))?/.exec(cmd);_.histPos=(_.hist[_.hist.length-1]!==cmd)?_.hist.push(cmd):_.hist.length;_.write("input",cmd);if(intCmd!==null)
 {if(_.execIntCmd(intCmd[1],intCmd[2])===false)
 _.write("error",["Unrecognized internal command "+intCmd[1]]);else
@@ -29,7 +29,7 @@ catch(ex)
 {console.error(ex);};};};_.prompt.value="";_.prompt.focus();};};_.body=_.mk(".body",_.output,_.prompt);_.body.id=_.ID;_.store=(key,dat)=>{if(localStorage)
 {let c=JSON.parse(localStorage.getItem(_.ID))??{};c[key]=dat;localStorage.setItem(_.ID,JSON.stringify(c));};};_.write=(kind,...vals)=>{let content=_.mk("");switch(kind)
 {case"input":content.innerText=vals[0];break;case"result":content.appendChild(_.formatVal(vals[0],kind));break;default:for(let v of vals[0])
-content.appendChild(_.formatVal(v,kind));};let l=_.mk(".ln."+kind,_.mk(".ix",(_.PREFIXES[kind]??"\u0020")),content);_.actout.appendChild(l);_.output.scrollTo(0,_.output.scrollHeight);return l;};_.formatVal=(val,kind)=>{const __objOut=(obj,ele)=>{let objConstr=obj.constructor.name;let objNam=_.mk("span.expandable","{"+objConstr+"}");objNam.onclick=_.toggleUl;objNam["__object"]=obj;ele.appendChild(objNam);let objDesc;switch(objConstr.toLowerCase())
+content.appendChild(_.formatVal(v,kind));};let l=_.mk(".ln."+kind,_.mk(".ix",(_.PREFIXES[kind]??"\u0020")),content);_.aout.appendChild(l);_.output.scrollTo(0,_.output.scrollHeight);return l;};_.formatVal=(val,kind)=>{const __objOut=(obj,ele)=>{let objConstr=obj.constructor.name;let objNam=_.mk("span.expandable","{"+objConstr+"}");objNam.onclick=_.toggleUl;objNam["__object"]=obj;ele.appendChild(objNam);let objDesc;switch(objConstr.toLowerCase())
 {case"window":objDesc=obj.location.toString();break;case"location":case"date":objDesc=obj.toString();break;case"array":objDesc="("+obj.length+")";break;};if(obj instanceof Element)
 {objDesc="<"+obj.tagName;for(let a of obj.attributes)
 objDesc+="\u0020"+a.name+"=\""+a.value+"\"";objDesc+=(obj.childElementCount>0)?">":"/>";}
@@ -44,15 +44,15 @@ val="\""+val.replaceAll("\"","\\\"")+"\"";span.innerText=val;break;case"number":
 {span.classList.remove("object");span.appendChild(_.mk("span.error",val.toString(),_.mk("br")));if(val.stack)
 span.appendChild(_.mk("span",val.stack));}
 else
-{__objOut(val,span);};break;default:span.innerText=val;};};span.classList.add("itm");return span;};_.toggleUl=(evt)=>{evt.stopPropagation();let obj=evt.target.__object;if(obj)
-{let ul=evt.target.parentElement.querySelector("ul");if(ul===null)
+{__objOut(val,span);};break;default:span.innerText=val;};};span.classList.add("itm");return span;};_.toggleUl=(e)=>{e.stopPropagation();let obj=e.target.__object;if(obj)
+{let ul=e.target.parentElement.querySelector("ul");if(ul===null)
 {ul=_.mk("ul");for(let mbr in obj)
 {let li=_.mk("li",_.mk("span",mbr+":\u0020"));try
 {li.appendChild(_.formatVal(obj[mbr],"result"));}
 catch(ex)
-{let e=_.formatVal(obj[mbr],"error");e.style.textDecoration="line-through";li.appendChild(e);};ul.appendChild(li);};evt.target.parentElement.appendChild(ul);};ul.style.display=(ul.style.display!=="initial")?"initial":"none";};};_.execIntCmd=(cmd,arg)=>{let sizeArg=/([\d\.]+)(\w*)?/.exec(arg);let cmds={"ah":()=>{_.autoHide=(arg==="1")},"c":()=>{while(_.output.firstElementChild)
-_.output.firstElementChild.remove();},"fs":()=>_.body.style.fontSize=sizeArg[1]+(sizeArg[2]??"rem"),"mh":()=>_.output.style.maxHeight=sizeArg[1]+(sizeArg[2]??"vh"),"x":()=>{console.debug=_.$dbg;console.log=_.$log;console.info=_.$inf;console.warn=_.$wrn;console.error=_.$err;console.group=_.$gb;console.groupCollapsed=_.$gbc;console.groupEnd=_.$ge;document.body.removeChild(_.body);},"zi":()=>_.body.style.zIndex=arg};return(cmds[cmd])?(cmds[cmd]()??true):false;};console.clear=()=>{_.execIntCmd("c");_.$clr()};console.group=console.groupCollapsed=(...vals)=>{_.$gb.apply(this,vals);_.write("group",vals).onclick=(evt)=>{let c=evt.target.closest(".group").nextSibling.style;c.display=(c.display!=="none")?"none":null;};let grp=_.mk(".grp");_.actout.appendChild(grp);_.actout=grp;};console.groupEnd=()=>{_.$ge();if(_.actout!==_.output)
-_.actout=_.actout.parentElement;};console.error=(...vals)=>{_.$err.apply(this,vals);_.write("error",vals);};if(_.LOG_LEVEL<=3)
+{let e=_.formatVal(obj[mbr],"error");e.style.textDecoration="line-through";li.appendChild(e);};ul.appendChild(li);};e.target.parentElement.appendChild(ul);};ul.style.display=(ul.style.display!=="initial")?"initial":"none";};};_.execIntCmd=(cmd,arg)=>{let sizeArg=/([\d\.]+)(\w*)?/.exec(arg);let cmds={"ah":()=>{_.autoHide=(arg==="1")},"c":()=>{while(_.output.firstElementChild)
+_.output.firstElementChild.remove();},"fs":()=>_.body.style.fontSize=sizeArg[1]+(sizeArg[2]??"rem"),"mh":()=>_.output.style.maxHeight=sizeArg[1]+(sizeArg[2]??"vh"),"x":()=>{console.debug=_.$dbg;console.log=_.$log;console.info=_.$inf;console.warn=_.$wrn;console.error=_.$err;console.group=_.$gb;console.groupCollapsed=_.$gbc;console.groupEnd=_.$ge;document.body.removeChild(_.body);},"zi":()=>_.body.style.zIndex=arg};return(cmds[cmd])?(cmds[cmd]()??true):false;};console.clear=()=>{_.execIntCmd("c");_.$clr()};console.group=console.groupCollapsed=(...vals)=>{_.$gb.apply(this,vals);_.write("group",vals).onclick=(e)=>{let c=e.target.closest(".group").nextSibling.style;c.display=(c.display!=="none")?"none":null;};let grp=_.mk(".grp");_.aout.appendChild(grp);_.aout=grp;};console.groupEnd=()=>{_.$ge();if(_.aout!==_.output)
+_.aout=_.aout.parentElement;};console.error=(...vals)=>{_.$err.apply(this,vals);_.write("error",vals);};if(_.LOG_LEVEL<=3)
 {console.warn=(...vals)=>{_.$wrn.apply(this,vals);_.write("warn",vals);};if(_.LOG_LEVEL<=2)
 {console.log=(...vals)=>{_.$log.apply(this,vals);_.write("log",vals);};console.info=(...vals)=>{_.$inf.apply(this,vals);_.write("info",vals);};if(_.LOG_LEVEL===1)
 {console.debug=(...vals)=>{_.$dbg.apply(this,vals);_.write("debug",vals);};};};};window.onerror=(msg,url,lineNo,columnNo,error)=>_.write("error",(error instanceof Error)?[msg]:[msg,url,lineNo,columnNo]);window.addEventListener("load",(e)=>{let style=_.mk("style");document.head.insertBefore(style,document.head.firstChild);for(let rule in _.CSS)
