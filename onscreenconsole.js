@@ -5,7 +5,7 @@ See the full license text at http://www.apache.org/licenses/LICENSE-2.0
  */
 if(/\bconsole=[1-4]\b/i.test(window.location.search))
 {let _={VERSION:"v1.4",ID:"on-screen-console",LOG_LEVEL:Number(/\bconsole=(\d)\b/i.exec(window.location.search)[1]),CSS:{"":"background-color:#fafafa;color:#555;font-family:monospace;font-size:0.8rem;position:fixed;top:0px;left:0px;width:100vw;margin:0px;padding:0px;box-sizing:border-box;z-index:"+Number.MAX_SAFE_INTEGER+";border:none;border-bottom:0.3rem solid #888;","ul":"list-style:none;margin:0rem;padding:0rem;color:#888;","input":"background-color:inherit;color:inherit;font-family:inherit;font-size:inherit;width:100%;border:none;border-top:1px solid #eee;outline:none;",".output":"padding:0px;margin:0px;max-height:30vh;overflow-y:scroll;",".output>div":"border-top:1px solid #eee;",".output>div>div:nth-child(1)":"float:left;margin-left:0.3em",".output>div>div:nth-child(2)":"margin-left:1.3em;",".itm":"display:inline-block;white-space:pre-line;vertical-align:top;margin-right:0.7em;",".expandable:hover":"text-decoration:underline;cursor:pointer;","div.warn":"background-color:#fdfdd8;","div.error":"background-color:#fee8e8;",".internal,.boolean,.undefined":"color:#00f;",".string":"color:#555;",".number":"color:#2a2;",".object":"color:#4aa;",".function":"color:#6af;font-weight:bold;",".error":"color:#c44;",".objdesc":"color:#aaa;font-style:italic;"},PREFIXES:{"error":"X","warn":"!","info":"i","input":">","result":"<"}};if(_.LOG_LEVEL>0)
-{_.$dbg=console.debug;_.$log=console.log;_.$inf=console.info;_.$wrn=console.warn;_.$err=console.error;_.hist=[];_.histPos=0;_.autoHide=true;_.mk=(eleDef,...vals)=>{let ele=document.createElement(/^[^\.\[\s]+/.exec(eleDef)[0]);let attrRx=/\[(.+?)='(.+?)'\]/g,attrRm;while(attrRm=attrRx.exec(eleDef))
+{_.$dbg=console.debug;_.$log=console.log;_.$inf=console.info;_.$wrn=console.warn;_.$err=console.error;_.$clr=console.clear;_.hist=[];_.histPos=0;_.autoHide=true;_.mk=(eleDef,...vals)=>{let ele=document.createElement(/^[^\.\[\s]+/.exec(eleDef)[0]);let attrRx=/\[(.+?)='(.+?)'\]/g,attrRm;while(attrRm=attrRx.exec(eleDef))
 ele.setAttribute(attrRm[1],attrRm[2]);let classRex=/\.([^.\s]+)/g,classRm;while(classRm=classRex.exec(eleDef))
 ele.classList.add(classRm[1]);for(let val of vals)
 if(["string","number"].includes(typeof val))
@@ -26,14 +26,14 @@ else
 {let res=eval(cmd);if(cmd.trim().startsWith("console.")===false)
 _.write("result",res);}
 catch(ex)
-{console.error(ex);};};};_.prompt.value="";_.prompt.focus();};};_.body=_.mk("div.body",_.output,_.prompt);_.body.id=_.ID;_.store=(key,dat)=>{if(!!localStorage)
+{console.error(ex);};};};_.prompt.value="";_.prompt.focus();};};_.body=_.mk("div.body",_.output,_.prompt);_.body.id=_.ID;_.store=(key,dat)=>{if(localStorage)
 {let c=JSON.parse(localStorage.getItem(_.ID))??{};c[key]=dat;localStorage.setItem(_.ID,JSON.stringify(c));};};_.write=(kind,...vals)=>{let content=_.mk("div");switch(kind)
 {case"input":content.innerText=vals[0];break;case"result":content.appendChild(_.formatVal(vals[0],kind));break;default:for(let v of vals[0])
 content.appendChild(_.formatVal(v,kind));};_.output.style.display="block";_.output.appendChild(_.mk("div."+kind,_.mk("div",(_.PREFIXES[kind]??"\u0020")),content));_.output.scrollTo(0,_.output.scrollHeight);};_.formatVal=(val,kind)=>{const __objOut=(obj,ele)=>{let objConstr=obj.constructor.name;let objNam=_.mk("span.expandable","{"+objConstr+"}");objNam.onclick=_.toggleUl;objNam["__object"]=obj;ele.appendChild(objNam);let objDesc;switch(objConstr.toLowerCase())
 {case"window":objDesc=obj.location.toString();break;case"location":case"date":objDesc=obj.toString();break;case"array":objDesc="("+obj.length+")";break;};if(obj instanceof Element)
 {objDesc="<"+obj.tagName;for(let a of obj.attributes)
 objDesc+="\u0020"+a.name+"=\""+a.value+"\"";objDesc+=(obj.childElementCount>0)?">":"/>";}
-if(!!objDesc)
+if(objDesc)
 ele.appendChild(_.mk("span.objdesc",objDesc));return ele;};let span=_.mk("span");if(val===null)
 {span.innerText="null";span.classList.add("internal");}
 else
@@ -41,20 +41,20 @@ else
 {case"undefined":case"boolean":span.innerText=val;break;case"string":if(val==="")
 val="<empty-string>";else if(kind==="result")
 val="\""+val.replaceAll("\"","\\\"")+"\"";span.innerText=val;break;case"number":span.innerText=val;break;case"function":span.innerText="function"+/\(.*?\)/.exec(val.toString())[0].replaceAll(/[\r\n]/g,"");break;case"object":if(val instanceof Error)
-{span.classList.remove("object");span.appendChild(_.mk("span.error",val.toString(),_.mk("br")));if(!!val.stack)
+{span.classList.remove("object");span.appendChild(_.mk("span.error",val.toString(),_.mk("br")));if(val.stack)
 span.appendChild(_.mk("span",val.stack));}
 else
-{__objOut(val,span);};break;default:span.innerText=val;};};span.classList.add("itm");return span;};_.toggleUl=(evt)=>{let obj=evt.target.__object;if(!!obj)
+{__objOut(val,span);};break;default:span.innerText=val;};};span.classList.add("itm");return span;};_.toggleUl=(evt)=>{let obj=evt.target.__object;if(obj)
 {let ul=evt.target.parentElement.querySelector("ul");if(ul===null)
 {ul=_.mk("ul");for(let mbr in obj)
 {let li=_.mk("li",_.mk("span",mbr+":\u0020"));try
 {li.appendChild(_.formatVal(obj[mbr],"result"));}
 catch(ex)
-{let e=_.formatVal(obj[mbr],"error");e.style.textDecoration="line-through";li.appendChild(e);};ul.appendChild(li);};evt.target.parentElement.appendChild(ul);};ul.style.display=(ul.style.display!=="initial")?"initial":"none";};};console.error=(...vals)=>{_.$err.apply(this,vals);_.write("error",vals);};if(_.LOG_LEVEL<=3)
+{let e=_.formatVal(obj[mbr],"error");e.style.textDecoration="line-through";li.appendChild(e);};ul.appendChild(li);};evt.target.parentElement.appendChild(ul);};ul.style.display=(ul.style.display!=="initial")?"initial":"none";};};_.execIntCmd=(cmd,arg)=>{let sizeArg=/([\d\.]+)(\w*)?/.exec(arg);let cmds={"ah":()=>{_.autoHide=(arg==="1")},"c":()=>{while(_.output.firstElementChild)
+_.output.firstElementChild.remove();},"fs":()=>_.body.style.fontSize=sizeArg[1]+(sizeArg[2]??"rem"),"mh":()=>_.output.style.maxHeight=sizeArg[1]+(sizeArg[2]??"vh"),"x":()=>{console.debug=_.$dbg;console.log=_.$log;console.info=_.$inf;console.warn=_.$wrn;console.error=_.$err;document.body.removeChild(_.body);},"zi":()=>_.body.style.zIndex=arg};return(cmds[cmd])?(cmds[cmd]()??true):false;};console.clear=()=>{_.execIntCmd("c");_.$clr()};console.error=(...vals)=>{_.$err.apply(this,vals);_.write("error",vals);};if(_.LOG_LEVEL<=3)
 {console.warn=(...vals)=>{_.$wrn.apply(this,vals);_.write("warn",vals);};if(_.LOG_LEVEL<=2)
 {console.log=(...vals)=>{_.$log.apply(this,vals);_.write("log",vals);};console.info=(...vals)=>{_.$inf.apply(this,vals);_.write("info",vals);};if(_.LOG_LEVEL===1)
-{console.debug=(...vals)=>{_.$dbg.apply(this,vals);_.write("debug",vals);};};};};_.execIntCmd=(cmd,arg)=>{let sizeArg=/([\d\.]+)(\w*)?/.exec(arg);let cmds={"ah":()=>{_.autoHide=(arg==="1")},"c":()=>{while(!!_.output.firstElementChild)
-_.output.firstElementChild.remove();},"fs":()=>_.body.style.fontSize=sizeArg[1]+(sizeArg[2]??"rem"),"mh":()=>_.output.style.maxHeight=sizeArg[1]+(sizeArg[2]??"vh"),"x":()=>{console.debug=_.$dbg;console.log=_.$log;console.info=_.$inf;console.warn=_.$wrn;console.error=_.$err;document.body.removeChild(_.body);},"zi":()=>_.body.style.zIndex=arg};return(!!cmds[cmd])?(cmds[cmd]()??true):false;};window.onerror=(msg,url,lineNo,columnNo,error)=>_.write("error",(error instanceof Error)?[msg]:[msg,url,lineNo,columnNo]);window.addEventListener("load",(e)=>{let style=_.mk("style");document.head.insertBefore(style,document.head.firstChild);for(let rule in _.CSS)
-style.sheet.insertRule("#"+_.ID+" "+rule+" {"+_.CSS[rule]+"}");document.body.appendChild(_.body);});window.addEventListener("click",(e)=>_.output.style.display=(!!e.target.closest("#"+_.ID))?"block":((_.autoHide)?"none":"block"));if(!!localStorage)
+{console.debug=(...vals)=>{_.$dbg.apply(this,vals);_.write("debug",vals);};};};};window.onerror=(msg,url,lineNo,columnNo,error)=>_.write("error",(error instanceof Error)?[msg]:[msg,url,lineNo,columnNo]);window.addEventListener("load",(e)=>{let style=_.mk("style");document.head.insertBefore(style,document.head.firstChild);for(let rule in _.CSS)
+style.sheet.insertRule("#"+_.ID+" "+rule+" {"+_.CSS[rule]+"}");document.body.appendChild(_.body);});window.addEventListener("click",(e)=>_.output.style.display=(e.target.closest("#"+_.ID))?"block":((_.autoHide)?"none":"block"));if(localStorage)
 {let c=JSON.parse(localStorage.getItem(_.ID))??{};for(let k in c)
 _.execIntCmd(k,c[k]);_.hist=c["history"]??[];_.histPos=_.hist.length;};_.write("log",["Welcome to OnScreenConsole "+_.VERSION+"!"]);_.write("log",["https://github.com/suppenhuhn79/on-screen-console"]);};};
