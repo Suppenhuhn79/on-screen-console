@@ -24,7 +24,7 @@ and then add `console=n` as search parameter to your pages url (where `n` sets t
 
 Take a look at the live demo:
 
-https://suppenhuhn79.github.io/on-screen-console/demo.html?console=1
+[https://suppenhuhn79.github.io/on-screen-console/demo.html?console=1](https://suppenhuhn79.github.io/on-screen-console/demo.html?console=1)
 
 ## Inernal commands
 
