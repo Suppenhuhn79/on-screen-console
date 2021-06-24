@@ -1,0 +1,51 @@
+#on-screen-console { /* Console main body */
+	/* to align on-screen-console at page top use this style:
+	top: 0px;
+	bottom: auto;
+	border-top: none;
+	border-bottom: 0.3rem solid #888;
+	*/
+}
+
+/* Input prompt */
+#on-screen-console input {
+}
+/* output area */
+#on-screen-console div.output {
+}
+
+/* Output beeing generated via console.debug() */
+#on-screen-console div.debug {
+}
+/* Output beeing generated via console.info() */
+#on-screen-console div.info {
+}
+/* Output beeing generated via console.warn() */
+#on-screen-console div.warn {
+}
+/* Output beeing generated via console.error() */
+#on-screen-console div.error {
+}
+
+/* Internal types like undefined, null, booean values */
+#on-screen-console span.internal {
+}
+/* Numbers */
+#on-screen-console span.number {
+}
+/* Strings */
+#on-screen-console span.string {
+}
+/* Objects */
+#on-screen-console span.object {
+}
+/* Functions */
+#on-screen-console span.function {
+}
+/* Errors */
+#on-screen-console span.error {
+}
+
+/* object members */
+#on-screen-console li>span:nth-child(1) {
+}

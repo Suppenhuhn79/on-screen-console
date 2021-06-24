@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>on-screen-console Demo Page</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="template.css"/>
+		<script src="onscreenconsole.js"></script>
+		<style>
+			* {
+				font-family: sans-serif;
+			}
+			code {
+				font-family: monospace;
+				font-size: 0.9rem;
+				background-color: #eee;
+				border-radius: 0.3em;
+				padding: 0.3em;
+			}
+		</style>
+	</head>
+	<body>
+		<div data-style="margin-top: 40vh;">
+			<h1>Welcome to the on-screen-console live demo!</h1>
+			<p>You see the on-screen-console at to bottom of the page.</p>
+			<p>Click any button to see a random output.</p>
+			<p>
+			<input type="button" value="console.log()" onclick="demo('log', event)" />
+			<input type="button" value="console.debug()" onclick="demo('debug', event)" />
+			<input type="button" value="console.info()" onclick="demo('info', event)" />
+			<input type="button" value="console.warn()" onclick="demo('warn', event)" />
+			<input type="button" value="console.error()" onclick="demo('error', event)" />
+			</p>
+			<p>We also have a demo object here that you can inspect. It's called "myObj". Just type <code>myObj</code> in the console input box .</p>
+			<p><em>Note: </em>When console losses focus (e.g. when you click outside on the page outside the console), it minimizes.</p>
+		</div>
+		<script>
+		if (/\bconsole=\d/.test(window.location.search) === false)
+		{
+			window.location.replace(window.location + "?console=1");
+		};
+		
+		function demo(kind, evt)
+		{
+			const samples = [
+				["If you ever wondered if", 0.5, "is less than", 2, ": It's", (0.5 < 2)],
+				["It is", new Date()],
+				[evt, "triggered from", evt.target],
+				[new Error("Did you ask for an error?")],
+				["Demo buttons produce random output just to show on-screen-console capabilities."]
+			];
+			console[kind].apply(null, samples[Math.floor(Math.random()*samples.length)]);
+			focus_console(evt);
+		};
+		
+		function focus_console(evt)
+		{
+			evt?.stopPropagation();
+			document.querySelector("#on-screen-console input").click();
+		};
+			
+		let myObj =
+		{
+			id: "alpha",
+			cardinality: 2,
+			company: "",
+			members: [1, 2, 3, null, "eof"],
+			e:
+			{
+				name: "dummy",
+				magic: 21,
+				ar: ["a",
+					{
+						"1": "one"
+					}
+				]
+			},
+			func: (arg) => console.log(arg)
+		};
+		
+		</script>
+		</body>
+</html>
