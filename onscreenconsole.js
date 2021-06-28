@@ -4,7 +4,7 @@ Copyright 2021 Christoph Zager, licensed under the Apache License, Version 2.0
 See the full license text at http://www.apache.org/licenses/LICENSE-2.0
  */
 if(/\bconsole=[1-4]\b/i.test(window.location.search))
-{let _={VERSION:"v1.5",ID:"on-screen-console",LOG_LEVEL:Number(/\bconsole=(\d)\b/i.exec(window.location.search)[1]),CSS:{"":"color:#555;position:fixed;bottom:0px;left:0px;width:100vw;margin:0px;padding:0px;z-index:"+Number.MAX_SAFE_INTEGER+";border:none;border-top:0.3rem solid #666;","*":"font-family:monospace;font-size:0.8rem;","ul":"list-style:none;margin:0rem;padding:0rem;color:#888;","input":"background-color:#fafafa;color:#555;width:100%;display:block;border:none;outline:none;",".output":"background-color:#fafafa;padding:0px;margin:0px;max-height:30vh;overflow-y:scroll;",".ln":"border-bottom:1px solid #eee;",".ix":"float:left;margin-left:0.3em",".ix~*":"float:clear;margin-left:1.3em;",".itm":"display:inline-block;white-space:pre-line;vertical-align:top;margin-right:0.7em;",".grp":"margin-left:0.5em;border-left:0.1rem solid #66d;padding-left:0.5em;",".group>*":"font-weight:bold;cursor:pointer;",".expandable:hover":"text-decoration:underline;cursor:pointer;","div.warn":"background-color:#fdfdd8;","div.error":"background-color:#fee8e8;",".internal,.boolean,.undefined":"color:#00f;",".string":"color:#555;",".number":"color:#2a2;",".object":"color:#4aa;",".function":"color:#6af;font-weight:bold;",".error":"color:#c44;",".objdesc":"color:#aaa;font-style:italic;"},PREFIXES:{"error":"X","warn":"!","info":"i","input":">","result":"<","group":"*"}};if(_.LOG_LEVEL>0)
+{let _={VERSION:"v1.5",ID:"on-screen-console",LOG_LEVEL:Number(/\bconsole=(\d)\b/i.exec(window.location.search)[1]),CSS:{"":"color:#555;position:fixed;bottom:0px;left:0px;width:100vw;margin:0px;padding:0px;z-index:"+Number.MAX_SAFE_INTEGER+";border:none;border-top:0.3rem solid #666;","*":"font-family:monospace;font-size:0.8rem;","ul":"list-style:none;margin:0rem;padding:0rem;color:#888;","input":"background-color:#fafafa;color:#555;width:100%;display:block;border:none;border-top:1px solid #eee;outline:none;",".output":"background-color:#fafafa;padding:0px;margin:0px;max-height:30vh;overflow-y:scroll;",".ln":"border-top:1px solid #eee;",".ix":"float:left;margin-left:0.3em",".ix~*":"float:clear;margin-left:1.3em;",".itm":"display:inline-block;white-space:pre-line;vertical-align:top;margin-right:0.7em;",".grp":"margin-left:0.5em;border-left:0.1rem solid #66d;padding-left:0.5em;",".group>*":"font-weight:bold;cursor:pointer;",".expandable:hover":"text-decoration:underline;cursor:pointer;","div.warn":"background-color:#fdfdd8;","div.error":"background-color:#fee8e8;",".internal,.boolean,.undefined":"color:#66d;",".string":"color:#555;",".number":"color:#2a2;",".object":"color:#4aa;",".function":"color:#6af;font-weight:bold;",".error":"color:#c44;",".objdesc":"color:#aaa;font-style:italic;"},PREFIXES:{"error":"X","warn":"!","info":"i","input":">","result":"<","group":"*"}};if(_.LOG_LEVEL>0)
 {_.$dbg=console.debug;_.$log=console.log;_.$inf=console.info;_.$wrn=console.warn;_.$err=console.error;_.$clr=console.clear;_.$gb=console.group;_.$gbc=console.groupCollapsed;_.$ge=console.groupEnd;_.hist=[];_.histPos=0;_.autoHide=true;_.mk=(eleDef,...vals)=>{let ele=document.createElement((/^[^\.\[]+/.exec(eleDef)??["div"])[0]);let attrRx=/\[(.+?)='(.+?)'\]/g,attrRm;while(attrRm=attrRx.exec(eleDef))
 ele.setAttribute(attrRm[1],attrRm[2]);let classRex=/\.([^.\s]+)/g,classRm;while(classRm=classRex.exec(eleDef))
 ele.classList.add(classRm[1]);for(let val of vals)
@@ -38,13 +38,12 @@ ele.appendChild(_.mk("span.objdesc",objDesc));return ele;};let span=_.mk("span")
 {span.innerText="null";span.classList.add("internal");}
 else
 {span.classList.add(typeof val);switch(typeof val)
-{case"undefined":case"boolean":span.innerText=val;break;case"string":if(val==="")
-val="<empty-string>";else if(kind==="result")
-val="\""+val.replaceAll("\"","\\\"")+"\"";span.innerText=val;break;case"number":span.innerText=val;break;case"function":span.innerText="function"+/\(.*?\)/.exec(val.toString())[0].replaceAll(/[\r\n]/g,"");break;case"object":if(val instanceof Error)
+{case"function":span.innerText="function"+/\(.*?\)/.exec(val.toString())[0].replaceAll(/[\r\n]/g,"");break;case"object":if(val instanceof Error)
 {span.classList.remove("object");span.appendChild(_.mk("span.error",val.toString(),_.mk("br")));if(val.stack)
 span.appendChild(_.mk("span",val.stack));}
 else
-{__objOut(val,span);};break;default:span.innerText=val;};};span.classList.add("itm");return span;};_.toggleUl=(e)=>{e.stopPropagation();let obj=e.target.__object;if(obj)
+__objOut(val,span);break;case"string":val=(kind==="result")?"\""+val.replaceAll("\"","\\\"")+"\"":val;if(val==="")
+{val="<empty-string>";span.classList.add("internal");};case"undefined":case"boolean":case"number":default:span.innerText=val;};};span.classList.add("itm");return span;};_.toggleUl=(e)=>{e.stopPropagation();let obj=e.target.__object;if(obj)
 {let ul=e.target.parentElement.querySelector("ul");if(ul===null)
 {ul=_.mk("ul");for(let mbr in obj)
 {let li=_.mk("li",_.mk("span",mbr+":\u0020"));try
