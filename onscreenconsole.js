@@ -43,13 +43,13 @@ else
 span.appendChild(_.mk("span",val.stack));}
 else
 __objOut(val,span);break;case"string":val=(kind==="result")?"\""+val.replaceAll("\"","\\\"")+"\"":val;if(val==="")
-{val="<empty-string>";span.classList.add("internal");};case"undefined":case"boolean":case"number":default:span.innerText=val;};};span.classList.add("itm");return span;};_.toggleUl=(e)=>{e.stopPropagation();let obj=e.target.__object;if(obj)
+{val="<empty-string>";span.classList.add("internal");};case"undefined":case"boolean":case"number":default:span.innerText=val;};};span.classList.add("itm");return span;};_.toggleUl=(e)=>{e.stopPropagation();_.prompt.focus(e);let obj=e.target.__object;if(obj)
 {let ul=e.target.parentElement.querySelector("ul");if(ul===null)
 {ul=_.mk("ul");for(let mbr in obj)
 {let li=_.mk("li",_.mk("span",mbr+":\u0020"));try
 {li.appendChild(_.formatVal(obj[mbr],"result"));}
 catch(ex)
-{let e=_.formatVal(obj[mbr],"error");e.style.textDecoration="line-through";li.appendChild(e);};ul.appendChild(li);};e.target.parentElement.appendChild(ul);};ul.style.display=(ul.style.display!=="initial")?"initial":"none";};};_.execIntCmd=(cmd,arg)=>{let sizeArg=/([\d\.]+)(\w*)?/.exec(arg);let cmds={"ah":()=>{_.autoHide=(arg==="1")},"c":()=>{while(_.output.firstElementChild)
+{let x=_.formatVal(obj[mbr],"error");x.style.textDecoration="line-through";li.appendChild(x);};ul.appendChild(li);};e.target.parentElement.appendChild(ul);};ul.style.display=(ul.style.display!=="initial")?"initial":"none";};};_.execIntCmd=(cmd,arg)=>{let sizeArg=/([\d\.]+)(\w*)?/.exec(arg);let cmds={"ah":()=>{_.autoHide=(arg==="1")},"c":()=>{while(_.output.firstElementChild)
 _.output.firstElementChild.remove();},"fs":()=>_.body.style.fontSize=sizeArg[1]+(sizeArg[2]??"rem"),"mh":()=>_.output.style.maxHeight=sizeArg[1]+(sizeArg[2]??"vh"),"x":()=>{console.debug=_.$dbg;console.log=_.$log;console.info=_.$inf;console.warn=_.$wrn;console.error=_.$err;console.group=_.$gb;console.groupCollapsed=_.$gbc;console.groupEnd=_.$ge;document.body.removeChild(_.body);},"zi":()=>_.body.style.zIndex=arg};return(cmds[cmd])?(cmds[cmd]()??true):false;};console.clear=()=>{_.execIntCmd("c");_.$clr();_.write("log",["Console was cleared"]);};console.group=console.groupCollapsed=(...vals)=>{_.$gb.apply(this,vals);_.write("group",vals).onclick=(e)=>{let c=e.target.closest(".group").nextSibling.style;c.display=(c.display!=="none")?"none":null;};let grp=_.mk(".grp");_.aout.appendChild(grp);_.aout=grp;};console.groupEnd=()=>{_.$ge();if(_.aout!==_.output)
 _.aout=_.aout.parentElement;};console.error=(...vals)=>{_.$err.apply(this,vals);_.write("error",vals);};if(_.LOG_LEVEL<=3)
 {console.warn=(...vals)=>{_.$wrn.apply(this,vals);_.write("warn",vals);};if(_.LOG_LEVEL<=2)
