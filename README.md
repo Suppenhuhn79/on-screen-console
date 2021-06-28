@@ -2,9 +2,9 @@
 
 This is an onscreen/inpage console/debugger. Using native javascript (ECMAScript 6) it offers **all features** in **one file** and absolutely **zero dependencies!** Great for mobile debugging.
 
-[![ECMAScript6](https://img.shields.io/badge/ECMAScript-6-0066ff)](#)\
 [![Standalone](https://img.shields.io/badge/Standalone-yes-33cc33)](#)\
 [![FileSize](https://img.badgesize.io/Suppenhuhn79/on-screen-console/main/onscreenconsole.js?label=File%20size)](#)\
+[![ECMAScript6](https://img.shields.io/badge/ECMAScript-6-0066ff)](#)\
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 It hooks into the default `console` functions, so every `console.log()`, `console.warn()`, `console.error()` and `console.debug()` will be written to both, the browsers build-in console and the on-screen-console.
@@ -21,11 +21,17 @@ Just add the script to your HTML file (preferably at the very top of your `<scri
 <script src="https://suppenhuhn79.github.io/on-screen-console/onscreenconsole.js"></script>
 ```
 
-and then add `console=n` as search parameter to your pages url (where `n` sets the log level: `1`=debug+log+info+warn+error, `2`=log+info+warn+error, `3`=warn+error, `4`=error only).
+and add `?console=n` to the url when calling your page (where `n` sets the log level: `1`=debug+log+info+warn+error, `2`=log+info+warn+error, `3`=warn+error, `4`=error only).
 
-Take a look at the live demo:
+### Take a look at the live demo:
 
 [https://suppenhuhn79.github.io/on-screen-console/demo.html?console=1](https://suppenhuhn79.github.io/on-screen-console/demo.html?console=1)
+
+If you want on-screen-console to be responsive to light or dark mode, add the dark-mode stylesheet to your page:
+
+```html
+<link rel="stylesheet" href="https://suppenhuhn79.github.io/on-screen-console/dark.css"/>
+```
 
 ## Inernal commands
 

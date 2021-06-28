@@ -1,0 +1,38 @@
+@media (prefers-color-scheme: dark) {
+
+	#on-screen-console { /* Console main body */
+		border-top-color:#999;
+		color: #aaa;
+		background-color: #222;
+	}
+
+	#on-screen-console input,
+	#on-screen-console .ln {
+		border-top:1px solid #444;
+	}
+
+	/* Output beeing generated via console.warn() */
+	#on-screen-console div.warn {
+		background-color: #552;
+	}
+	/* Output beeing generated via console.error() */
+	#on-screen-console div.error {
+		background-color: #533;
+	}
+
+	/* Strings */
+	#on-screen-console span.string {
+		color: #aaa;
+	}
+	/* Internal types like undefined, null, booean values */
+	#on-screen-console span.boolean,
+	#on-screen-console span.internal {
+		color: #99c;
+	}
+
+	/* object members */
+	#on-screen-console li>span:nth-child(1) {
+		color: #888;
+	}
+
+}
