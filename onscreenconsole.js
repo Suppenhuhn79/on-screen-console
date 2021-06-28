@@ -4,7 +4,7 @@ Copyright 2021 Christoph Zager, licensed under the Apache License, Version 2.0
 See the full license text at http://www.apache.org/licenses/LICENSE-2.0
  */
 if(/\bconsole=[1-4]\b/i.test(window.location.search))
-{let _={VERSION:"v1.5",ID:"on-screen-console",LOG_LEVEL:Number(/\bconsole=(\d)\b/i.exec(window.location.search)[1]),CSS:{"":"color:#555;position:fixed;bottom:0px;left:0px;width:100vw;margin:0px;padding:0px;box-sizing:border-box;z-index:"+Number.MAX_SAFE_INTEGER+";border:none;border-top:0.3rem solid #888;","*,input":"font-family:monospace;font-size:0.8rem;","ul":"list-style:none;margin:0rem;padding:0rem;color:#888;","input":"background-color:#fafafa;color:#555;width:100%;border:none;border-top:1px solid #eee;outline:none;",".output":"background-color:#fafafa;padding:0px;margin:0px;max-height:30vh;overflow-y:scroll;",".ln":"border-top:1px solid #eee;",".ix":"float:left;margin-left:0.3em",".ix~*":"float:clear;margin-left:1.3em;",".itm":"display:inline-block;white-space:pre-line;vertical-align:top;margin-right:0.7em;",".grp":"margin-left:0.5em;border-left:0.1rem solid #66d;padding-left:0.5em;",".group>*":"font-weight:bold;cursor:pointer;",".expandable:hover":"text-decoration:underline;cursor:pointer;","div.warn":"background-color:#fdfdd8;","div.error":"background-color:#fee8e8;",".internal,.boolean,.undefined":"color:#00f;",".string":"color:#555;",".number":"color:#2a2;",".object":"color:#4aa;",".function":"color:#6af;font-weight:bold;",".error":"color:#c44;",".objdesc":"color:#aaa;font-style:italic;"},PREFIXES:{"error":"X","warn":"!","info":"i","input":">","result":"<","group":"*"}};if(_.LOG_LEVEL>0)
+{let _={VERSION:"v1.5",ID:"on-screen-console",LOG_LEVEL:Number(/\bconsole=(\d)\b/i.exec(window.location.search)[1]),CSS:{"":"color:#555;position:fixed;bottom:0px;left:0px;width:100vw;margin:0px;padding:0px;z-index:"+Number.MAX_SAFE_INTEGER+";border:none;border-top:0.3rem solid #666;","*":"font-family:monospace;font-size:0.8rem;","ul":"list-style:none;margin:0rem;padding:0rem;color:#888;","input":"background-color:#fafafa;color:#555;width:100%;display:block;border:none;outline:none;",".output":"background-color:#fafafa;padding:0px;margin:0px;max-height:30vh;overflow-y:scroll;",".ln":"border-bottom:1px solid #eee;",".ix":"float:left;margin-left:0.3em",".ix~*":"float:clear;margin-left:1.3em;",".itm":"display:inline-block;white-space:pre-line;vertical-align:top;margin-right:0.7em;",".grp":"margin-left:0.5em;border-left:0.1rem solid #66d;padding-left:0.5em;",".group>*":"font-weight:bold;cursor:pointer;",".expandable:hover":"text-decoration:underline;cursor:pointer;","div.warn":"background-color:#fdfdd8;","div.error":"background-color:#fee8e8;",".internal,.boolean,.undefined":"color:#00f;",".string":"color:#555;",".number":"color:#2a2;",".object":"color:#4aa;",".function":"color:#6af;font-weight:bold;",".error":"color:#c44;",".objdesc":"color:#aaa;font-style:italic;"},PREFIXES:{"error":"X","warn":"!","info":"i","input":">","result":"<","group":"*"}};if(_.LOG_LEVEL>0)
 {_.$dbg=console.debug;_.$log=console.log;_.$inf=console.info;_.$wrn=console.warn;_.$err=console.error;_.$clr=console.clear;_.$gb=console.group;_.$gbc=console.groupCollapsed;_.$ge=console.groupEnd;_.hist=[];_.histPos=0;_.autoHide=true;_.mk=(eleDef,...vals)=>{let ele=document.createElement((/^[^\.\[]+/.exec(eleDef)??["div"])[0]);let attrRx=/\[(.+?)='(.+?)'\]/g,attrRm;while(attrRm=attrRx.exec(eleDef))
 ele.setAttribute(attrRm[1],attrRm[2]);let classRex=/\.([^.\s]+)/g,classRm;while(classRm=classRex.exec(eleDef))
 ele.classList.add(classRm[1]);for(let val of vals)
@@ -16,17 +16,17 @@ ele.appendChild(val);return ele;};_.output=_.mk(".output");_.aout=_.output;_.pro
 {_.histPos+=1;if(_.histPos===_.hist.length)
 _.prompt.value="";else
 _.prompt.value=_.hist[_.histPos];};break;};};_.prompt.onkeypress=(e)=>{if(e.keyCode===13)
-{e.stopPropagation();let cmd=e.target.value;if(cmd.trim()!=="")
+{e.stopPropagation();let cmd=e.target.value.trim();if(cmd!=="")
 {let intCmd=/^\.(\w+)(?:\s+(.+))?/.exec(cmd);_.histPos=(_.hist[_.hist.length-1]!==cmd)?_.hist.push(cmd):_.hist.length;_.write("input",cmd);if(intCmd!==null)
 {if(_.execIntCmd(intCmd[1],intCmd[2])===false)
 _.write("error",["Unrecognized internal command "+intCmd[1]]);else
 _.store(intCmd[1],intCmd[2]);}
 else
 {_.store("history",_.hist);try
-{let res=eval(cmd);if(cmd.trim().startsWith("console.")===false)
+{let res=eval(cmd);if(cmd.startsWith("console.")===false)
 _.write("result",res);}
 catch(ex)
-{console.error(ex);};};};_.prompt.value="";_.prompt.focus();};};_.body=_.mk(".body",_.output,_.prompt);_.body.id=_.ID;_.store=(key,dat)=>{if(localStorage)
+{console.error(ex);};};};_.prompt.value="";_.prompt.focus();};};_.body=_.mk("",_.output,_.prompt);_.body.id=_.ID;_.store=(key,dat)=>{if(localStorage)
 {let c=JSON.parse(localStorage.getItem(_.ID))??{};c[key]=dat;localStorage.setItem(_.ID,JSON.stringify(c));};};_.write=(kind,...vals)=>{let content=_.mk("");switch(kind)
 {case"input":content.innerText=vals[0];break;case"result":content.appendChild(_.formatVal(vals[0],kind));break;default:for(let v of vals[0])
 content.appendChild(_.formatVal(v,kind));};let l=_.mk(".ln."+kind,_.mk(".ix",(_.PREFIXES[kind]??"\u0020")),content);_.aout.appendChild(l);_.output.scrollTo(0,_.output.scrollHeight);return l;};_.formatVal=(val,kind)=>{const __objOut=(obj,ele)=>{let objConstr=obj.constructor.name;let objNam=_.mk("span.expandable","{"+objConstr+"}");objNam.onclick=_.toggleUl;objNam["__object"]=obj;ele.appendChild(objNam);let objDesc;switch(objConstr.toLowerCase())
@@ -55,7 +55,8 @@ _.output.firstElementChild.remove();},"fs":()=>_.body.style.fontSize=sizeArg[1]+
 _.aout=_.aout.parentElement;};console.error=(...vals)=>{_.$err.apply(this,vals);_.write("error",vals);};if(_.LOG_LEVEL<=3)
 {console.warn=(...vals)=>{_.$wrn.apply(this,vals);_.write("warn",vals);};if(_.LOG_LEVEL<=2)
 {console.log=(...vals)=>{_.$log.apply(this,vals);_.write("log",vals);};console.info=(...vals)=>{_.$inf.apply(this,vals);_.write("info",vals);};if(_.LOG_LEVEL===1)
-{console.debug=(...vals)=>{_.$dbg.apply(this,vals);_.write("debug",vals);};};};};window.onerror=(msg,url,lineNo,columnNo,error)=>_.write("error",(error instanceof Error)?[msg]:[msg,url,lineNo,columnNo]);window.addEventListener("load",(e)=>{let style=_.mk("style");document.head.insertBefore(style,document.head.firstChild);for(let rule in _.CSS)
-style.sheet.insertRule("#"+_.ID+" "+rule+" {"+_.CSS[rule]+"}");document.body.appendChild(_.body);});window.addEventListener("click",(e)=>_.output.style.display=(e.target.closest("#"+_.ID))?"block":((_.autoHide)?"none":"block"));if(localStorage)
+{console.debug=(...vals)=>{_.$dbg.apply(this,vals);_.write("debug",vals);};};};};window.onerror=(msg,url,lineNo,columnNo,error)=>_.write("error",(error instanceof Error)?[msg]:[msg,url,lineNo,columnNo]);window.addEventListener("load",(e)=>{let style=_.mk("style");document.head.insertBefore(style,document.head.firstChild);for(let rS in _.CSS)
+for(let rV of rS.split(","))
+style.sheet.insertRule("#"+_.ID+" "+rV+" {"+_.CSS[rS]+"}");document.body.appendChild(_.body);});window.addEventListener("click",(e)=>_.output.style.display=(e.target.closest("#"+_.ID))?"block":((_.autoHide)?"none":"block"));if(localStorage)
 {let c=JSON.parse(localStorage.getItem(_.ID))??{};for(let k in c)
 _.execIntCmd(k,c[k]);_.hist=c["history"]??[];_.histPos=_.hist.length;};_.write("log",["Welcome to OnScreenConsole "+_.VERSION+"!"]);_.write("log",["https://github.com/suppenhuhn79/on-screen-console"]);};};
