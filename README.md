@@ -9,7 +9,7 @@ This is an onscreen/inpage console/debugger. Using native javascript (ECMAScript
 
 It hooks into the default `console` functions, so every `console.log()`, `console.warn()`, `console.error()` and `console.debug()` will be written to both, the browsers build-in console and the on-screen-console.
 
-All JavaScript errors (except for those in promises) will also be logged into on-screen-console. The amount and value of error-information depends on the browser and error type.
+All JavaScript errors, including those in async functions and promises, will also be logged into on-screen-console. The amount and value of error-information depends on the browser and error type.
 
 Unfortunately there is no support for `console.trace()` yet.
 
