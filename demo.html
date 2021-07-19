@@ -4,6 +4,12 @@
 		<title>on-screen-console Demo Page</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script>
+		if (/\bconsole=\d/.test(window.location.search) === false)
+		{
+			window.location.replace(window.location + "?console=1");
+		};
+		</script>
 		<link rel="stylesheet" href="dark.css"/>
 		<script src="onscreenconsole.js"></script>
 		<style>
@@ -49,11 +55,6 @@
 			<p><em>Note: </em>When console loses focus (e.g. when you click outside it), it minimizes.</p>
 		</div>
 		<script>
-		if (/\bconsole=\d/.test(window.location.search) === false)
-		{
-			window.location.replace(window.location + "?console=1");
-		};
-		
 		function focus_console(evt)
 		{
 			evt?.stopPropagation();
