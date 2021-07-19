@@ -27,7 +27,7 @@ catch(e)
 {console.error(e)}}};_.i.value='';_.i.focus()}};_.b=_.mk('',_.o,_.i);_.b.id=_.ID;_.sto=(key,dat)=>{if(localStorage)
 {let c=JSON.parse(localStorage.getItem(_.ID))??{};c[key]=dat;localStorage.setItem(_.ID,JSON.stringify(c))}};_.wrt=(kind,...vals)=>{let content=_.mk('');switch(kind)
 {case'input':content.innerText=vals[0];break;case'result':content.appendChild(_.fmt(vals[0],kind));break;default:for(let v of vals[0])
-content.appendChild(_.fmt(v,kind))};let l=_.mk('.ln.'+kind,_.mk('.ix',(_.PREFIXES[kind]??' ')),content);_.aO.appendChild(l);_.o.scrollTo(0,_.o.scrollHeight);return l};_.fmt=(val,kind)=>{const __objOut=(obj,ele)=>{let objConstr=obj.constructor.name;let objNam=_.mk('span.expandable','{'+objConstr+'}');objNam.onclick=_.tgl;objNam.__object=obj;ele.appendChild(objNam);let objDesc;switch(objConstr.toLowerCase())
+content.appendChild(_.fmt(v,kind))};let l=_.mk('.ln.'+kind,_.mk('.ix',(_.PREFIXES[kind]??' ')),content);_.aO.appendChild(l);_.o.scrollTo(0,_.o.scrollHeight);return l};_.fmt=(val,kind)=>{const __objOut=(obj,ele)=>{let objConstr=obj.constructor?.name||'Object';let objNam=_.mk('span.expandable','{'+objConstr+'}');objNam.onclick=_.tgl;objNam.__object=obj;ele.appendChild(objNam);let objDesc;switch(objConstr.toLowerCase())
 {case'window':objDesc=obj.location.toString();break;case'location':case'date':objDesc=obj.toString();break;case'array':objDesc='('+obj.length+')';break};if(obj instanceof Element)
 {objDesc='<'+obj.tagName;for(let a of obj.attributes)
 objDesc+=' '+a.name+'="'+a.value.replaceAll('"','\\"')+'"';objDesc+=(obj.childElementCount>0)?'>':'/>'}
